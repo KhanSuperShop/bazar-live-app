@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+<script src="https://jsdelivr.net"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>খান সুপার শপ - অনলাইন মুদি বাজার</title>
@@ -226,6 +228,8 @@
             <div class="products-grid">
                 
                 <div class="product-card">
+<div id="product-list-dynamic" style="display: flex; flex-wrap: wrap; gap: 20px;"></div>
+
                     <img src="https://cdn-icons-png.flaticon.com/512/5029/5029236.png" alt="মিনিকেট চাল">
                     <div>
                         <div class="product-title">মিনিকেট চাল (১ কেজি)</div>
@@ -455,6 +459,44 @@ function decreaseQuantity(index) {
 <div style="text-align: center; padding: 20px; background: #eee; margin-top: 50px;">
     <a href="admin.html" style="color: #2e7d32; text-decoration: none; font-weight: bold;">অ্যাডমিন লগইন</a>
 </div>
+<script>
+    // আপনার সুপাবেস কানেকশন
+    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_KEY = "sb_publishable_7U9jd7NsYoNos-EKn3yR9f4fqtK"; // আপনার দেওয়া আসল কী
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ডাটাবেজ থেকে পণ্য এনে আপনার ডিজাইনে দেখানোর ফাংশন
+    async function loadLiveProducts() {
+        const { data: products, error } = await _supabase
+            .from('products')
+            .select('*');
+
+        if (error) {
+            console.error("ডাটা আনতে সমস্যা:", error);
+            return;
+        }
+
+        const dynamicContainer = document.getElementById('product-list-dynamic');
+        
+        // ডাটাবেজে থাকা প্রতিটি পণ্যের জন্য আপনার তৈরি করা ডিজাইন অনুযায়ী কার্ড তৈরি হবে
+        products.forEach(product => {
+            const imgSource = product.image_url ? product.image_url : 'https://flaticon.com'; // ছবি না থাকলে ডামি ছবি
+            
+            dynamicContainer.innerHTML += `
+                <div class="product-card">
+                    <img src="${imgSource}" alt="${product.name}">
+                    <div class="product-title">${product.name} (কেজি/লিটার)</div>
+                    <div class="product-price">${product.price} টাকা</div>
+                    <button class="add-to-cart-btn" onclick="addToCart('${product.name}', ${product.price})">কার্টে যোগ করুন</button>
+                </div>
+            `;
+        });
+    }
+
+    // পেজ লোড হলেই রান হবে
+    window.onload = loadLiveProducts;
+</script>
+
 
 </body>
 </html>
