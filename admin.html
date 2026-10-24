@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <!-- সুপাবেস কানেকশন লিংক (সংশোধিত) -->
-    <script src="https://jsdelivr.net"></script>
+
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,7 +69,7 @@
         @media (max-width: 992px) {
             .admin-grid { grid-template-columns: 1fr; }
         }
-        /*カードデザイン*/
+        /* কার্ড ডিজাইন */
         .card {
             background: white;
             border-radius: 8px;
@@ -145,6 +144,7 @@
         <a href="#" class="active">📦 পণ্য ম্যানেজমেন্ট</a>
         <a href="#">📋 অর্ডার লিস্ট</a>
         <a href="#">👥 কাস্টমারস</a>
+        <!-- এখানে index.html এর জায়গায় আপনার মেইন কাস্টমার পেজের সঠিক ফাইলের নাম দিন -->
         <a href="index.html" style="margin-top: 50px; background-color: #c62828; text-align: center;">🏠 মেইন ওয়েবসাইটে যান</a>
     </div>
 
@@ -167,6 +167,7 @@
                     </div>
                     <div class="form-group">
                         <label for="pImg">ছবির লিংক (ঐচ্ছিক)</label>
+                        <!-- এখান থেকে required কেটে ঐচ্ছিক করা হয়েছে -->
                         <input type="url" id="pImg" placeholder="https://example.com">
                     </div>
                     <button type="submit" class="btn-submit">পণ্য যুক্ত করুন</button>
@@ -187,7 +188,7 @@
                             </tr>
                         </thead>
                         <tbody id="adminProductTable">
-                            <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে পণ্য লাইভ লোড হবে -->
+                            <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে পণ্য লোড হবে -->
                         </tbody>
                     </table>
                 </div>
@@ -196,65 +197,99 @@
     </div>
 
     <script>
-        // আপনার সিকিউরিটি পাসওয়ার্ড প্রোম্পট
-        (function() {
-            let password = prompt("خان সুপার শপ - অ্যাডমিন প্যানেলে ঢুকতে সিকিউরিটি পাসওয়ার্ড দিন:");
-            if (password !== "khan1234") { 
-                alert("❌ ভুল পাসওয়ার্ড! আপনাকে মেইন কাস্টমার পেজে ফেরত পাঠানো হচ্ছে।");
-                window.location.href = "index.html"; 
-            } else {
-                alert("✅ সফলভাবে লগইন হয়েছে! স্বাগতম অ্যাডমিন প্যানেলে।");
-            }
-        })();
+// আপনার admin.html ফাইলের <script> ট্যাগের একদম প্রথম লাইনে এটি বসান
+(function() {
+    let password = prompt("খান সুপার শপ - অ্যাডমিন প্যানেলে ঢুকতে সিকিউরিটি পাসওয়ার্ড দিন:");
+    
+    // এখানে 'khan1234' হলো আপনার পাসওয়ার্ড, আপনি চাইলে এটি পরিবর্তন করতে পারেন
+    if (password !== "khan1234") { 
+        alert("❌ ভুল পাসওয়ার্ড! আপনাকে মেইন কাস্টমার পেজে ফেরত পাঠানো হচ্ছে।");
+        window.location.href = "index.html"; // ভুল পাসওয়ার্ড দিলে মেইন পেজে পাঠিয়ে দেবে
+    } else {
+        alert("✅ সফলভাবে লগইন হয়েছে! স্বাগতম অ্যাডমিন প্যানেলে।");
+    }
+})();
 
-        // সুপাবেস সেটিংস ও কানেকশন
-        const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_KEY = "sb_publishable_7U9jd7NsYoNos-EKn3yR9f4fqtK";
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        // ডিফল্ট কোনো ছবি না দিলে এই আইকনটি দেখাবে
         const defaultImage = 'https://flaticon.com';
 
-        // ডাটাবেজ থেকে পণ্য এনে অ্যাডমিন টেবিলে দেখানোর ফাংশন
-        async function renderAdminTable() {
+        // শুরুর কিছু ডেমো প্রোডাক্ট লিস্ট
+        let initialProducts = [
+            { id: 1, name: 'মিনিকেট চাল (১ কেজি)', price: 70, img: 'https://flaticon.com' },
+            { id: 2, name: 'সয়াবিন তেল (১ লিটার)', price: 165, img: 'https://flaticon.com' },
+            { id: 3, name: 'মসুর ডাল (১ কেজি)', price: 130, img: 'https://flaticon.com' }
+        ];
+
+        // লোকাল স্টোরেজ থেকে পণ্য নিয়ে আসা
+        let products = JSON.parse(localStorage.getItem('shopProducts')) || initialProducts;
+
+        // টেবিল আপডেট করার ফাংশন
+        function renderAdminTable() {
             const tableBody = document.getElementById('adminProductTable');
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">লোড হচ্ছে...</td></tr>';
-
-            const { data: products, error } = await _supabase
-                .from('products')
-                .select('*');
-
-            if (error) {
-                console.error("ডাটা আনতে সমস্যা:", error);
-                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">ডাটা আনতে সমস্যা হয়েছে!</td></tr>';
-                return;
-            }
-
             let html = '';
-            if (products.length === 0) {
-                html = '<tr><td colspan="4" style="text-align:center;">কোনো পণ্য পাওয়া যায়নি।</td></tr>';
-            } else {
-                products.forEach((product) => {
-                    const productImg = product.image_url ? product.image_url : defaultImage;
-                    html += `
-                        <tr>
-                            <td><img src="${productImg}" width="35" height="35" style="object-fit:contain; border-radius:4px;"></td>
-                            <td><strong>${product.name}</strong></td>
-                            <td>${product.price} টাকা</td>
-                            <td><button class="btn-delete" onclick="deleteProduct(${product.id})">মুছুন</button></td>
-                        </tr>
-                    `;
-                });
-            }
+            
+            products.forEach((product, index) => {
+                // ছবি না থাকলে ডিফল্ট ইমেজ বসবে
+                const productImg = product.img ? product.img : defaultImage;
+                
+                html += `
+                    <tr>
+                        <td><img src="${productImg}" width="35" height="35" style="object-fit:contain;"></td>
+                        <td><strong>${product.name}</strong></td>
+                        <td>${product.price} টাকা</td>
+                        <td><button class="btn-delete" onclick="deleteProduct(${index})">মুছুন</button></td>
+                    </tr>
+                `;
+            });
             tableBody.innerHTML = html;
+            // লোকাল স্টোরেজে ডাটা আপডেট সেভ করা
+            localStorage.setItem('shopProducts', JSON.stringify(products));
         }
 
-        // নতুন পণ্য ডাটাবেজে যোগ করার ফাংশন
-        document.getElementById('addProductForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-
+        // নতুন পণ্য যোগ করার লজিক
+        document.getElementById('addProductForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             const name = document.getElementById('pName').value;
-            const price = document.getElementById('pPrice').value;
-            const img = document.getElementById('pImg').value || null;
+            const price = parseInt(document.getElementById('pPrice').value);
+            let img = document.getElementById('pImg').value.trim();
+
+            // কাস্টমার ছবি না দিলে ডিফল্ট ছবি সেট হবে
+            if(!img) {
+                img = defaultImage;
+            }
+
+            products.push({ id: Date.now(), name: name, price: price, img: img });
+            renderAdminTable();
+            
+            this.reset();
+            alert('পণ্যটি সফলভাবে যুক্ত হয়েছে!');
+        });
+
+        // পণ্য মুছে ফেলার ফাংশন
+        function deleteProduct(index) {
+            if(confirm('আপনি কি নিশ্চিত যে পণ্যটি মুছে ফেলতে চান?')) {
+                products.splice(index, 1);
+                renderAdminTable();
+            }
+        }
+
+        // পেজ লোড হলে টেবিল চালু হবে
+        renderAdminTable();
+<!-- সুপাবেস কানেকশন লিংক -->
+<script src="https://jsdelivr.net"></script>
+<script>
+    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_KEY = "sb_publishable_7U9jd7NsYoNos-EKn3yR9f4fqtK";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ফর্ম সাবমিট হ্যান্ডলার (পণ্য ডাটাবেজে পাঠানোর কাজ)
+    const form = document.getElementById('addProductForm') || document.querySelector('form');
+    if(form) {
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const name = document.getElementById('pName')?.value || document.getElementById('productName')?.value;
+            const price = document.getElementById('pPrice')?.value || document.getElementById('productPrice')?.value;
+            const img = document.getElementById('pImg')?.value || document.getElementById('productImg')?.value || null;
 
             const { data, error } = await _supabase
                 .from('products')
@@ -263,20 +298,13 @@
             if (error) {
                 alert('পণ্য যোগ করতে সমস্যা হয়েছে: ' + error.message);
             } else {
-                alert('✅ পণ্য সফলভাবে ডাটাবেজে লাইভ যুক্ত হয়েছে!');
-                document.getElementById('addProductForm').reset();
-                renderAdminTable(); // টেবিল রিফ্রেশ করা
+                alert('পণ্য সফলভাবে ডাটাবেজে লাইভ যুক্ত হয়েছে!');
+                form.reset();
             }
         });
+    }
+</script>
 
-        // পণ্য ডাটাবেজ থেকে মুছে ফেলার ফাংশন
-        async function deleteProduct(productId) {
-            if (confirm("আপনি কি নিশ্চিতভাবে এই পণ্যটি মুছে ফেলতে চান?")) {
-                const { error } = await _supabase
-                    .from('products')
-                    .delete()
-                    .eq('id', productId);
-
-                if (error) {
-                    alert("মুছে ফেলতে সমস্যা হয়েছে: " + error.message);
-                } else {
+    </script>
+</body>
+</html>
