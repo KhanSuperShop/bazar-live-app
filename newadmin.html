@@ -100,7 +100,7 @@
         });
 
         function deleteItem(index) {
-            if (!confirm("আপনি কি নিশ্চিত যে পণ্যটি মুছে ফেলতে চান?")) return;
+            if (!confirm("আপনি কি নিশ্চিত कि পণ্যটি মুছে ফেলতে চান?")) return;
             const localItems = JSON.parse(localStorage.getItem('khan_shop_perfect_data')) || [];
             localItems.splice(index, 1);
             localStorage.setItem('khan_shop_perfect_data', JSON.stringify(localItems));
