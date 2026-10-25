@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>খান সুপার শপ - অ্যাডমিন</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; color: #333; }
+        header { text-align: center; background: #dc3545; color: white; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .container { display: flex; flex-direction: column; gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .admin-panel { background: white; padding: 20px; border-radius: 5px; border: 2px dashed #dc3545; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        .upload-btn { background: #dc3545; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; }
+        .upload-btn:hover { background: #c82333; }
+        .manage-view { background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+        .product-card { border: 1px solid #ddd; padding: 12px; border-radius: 5px; text-align: center; background: #fafafa; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-card img { width: 70px; height: 70px; object-fit: contain; margin: 10px auto; display: block; }
+        .product-card h3 { margin: 10px 0 5px 0; font-size: 16px; }
+        .product-card p { color: #dc3545; font-weight: bold; margin: 0 0 10px 0; font-size: 16px; }
+        .delete-btn { background: #ff4d4d; color: white; padding: 6px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; }
+        .delete-btn:hover { background: #cc0000; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🛠️ খান সুপার শপ - অ্যাডমিন প্যানেল</h1>
+    </header>
+
+    <div class="container">
+        <div class="admin-panel">
+            <h2>➕ নতুন আইটেম যোগ করুন</h2>
+            <form id="productForm">
+                <div class="form-group">
+                    <label>পণ্যের নাম:</label>
+                    <input type="text" id="pName" placeholder="যেমন: আলু" required>
+                </div>
+                <div class="form-group">
+                    <label>মূল্য (টাকা):</label>
+                    <input type="number" id="pPrice" placeholder="যেমন: ৫০" required>
+                </div>
+                <div class="form-group">
+                    <label>ছবির লিংক (ঐচ্ছিক):</label>
+                    <input type="url" id="pImg" placeholder="https://example.com">
+                </div>
+                <button type="submit" class="upload-btn">পণ্য আপলোড করুন</button>
+            </form>
+        </div>
+
+        <div class="manage-view">
+            <h2>📦 বর্তমান স্টক</h2>
+            <div class="product-grid" id="productGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        function renderAdminProducts() {
+            const grid = document.getElementById('productGrid');
+            const localItems = JSON.parse(localStorage.getItem('khan_shop_perfect_data')) || [];
+
+            if (localItems.length === 0) {
+                grid.innerHTML = '<p>স্টক খালি। কোনো পণ্য নেই।</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            localItems.forEach((product, index) => {
+                const defaultBox = 'https://flaticon.com';
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div>
+                        <img src="${product.image_url ? product.image_url : defaultBox}" onerror="this.src='${defaultBox}'">
+                        <h3>${product.name}</h3>
+                        <p>৳ ${product.price}</p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteItem(${index})">❌ ডিলিট করুন</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('pName').value;
+            const price = document.getElementById('pPrice').value;
+            const image_url = document.getElementById('pImg').value.trim() || null;
+
+            const localItems = JSON.parse(localStorage.getItem('khan_shop_perfect_data')) || [];
+            localItems.unshift({ name, price, image_url });
+            
+            localStorage.setItem('khan_shop_perfect_data', JSON.stringify(localItems));
+            alert('পণ্যটি সফলভাবে স্টক-এ যোগ হয়েছে!');
+            
+            document.getElementById('productForm').reset();
+            renderAdminProducts();
+        });
+
+        function deleteItem(index) {
+            if (!confirm("আপনি কি নিশ্চিত যে পণ্যটি মুছে ফেলতে চান?")) return;
+            const localItems = JSON.parse(localStorage.getItem('khan_shop_perfect_data')) || [];
+            localItems.splice(index, 1);
+            localStorage.setItem('khan_shop_perfect_data', JSON.stringify(localItems));
+            renderAdminProducts();
+        }
+
+        renderAdminProducts();
+    </script>
+</body>
+</html>
