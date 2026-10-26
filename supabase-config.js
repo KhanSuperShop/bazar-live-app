@@ -1,6 +1,6 @@
 Load Supabase CDN Script safely
 const supabaseScript = document.createElement('script');
-supabaseScript.src = 'https://jsdelivr.net';
+supabaseScript.src = 'https://jsdelivr.net
 document.head.appendChild(supabaseScript);
 
 const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co";
