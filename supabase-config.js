@@ -1,111 +1,51 @@
-import { createClient } from 'https://jsdelivr.net';
-// ১. সুপাবেস ক্রেডেনশিয়াল (আপনার সঠিক প্রোজেক্ট লিঙ্ক ও কি)
-const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; 
+// ১. আপনার গুগল শিটের ডেটা লিঙ্ক সরাসরি সেট করা হয়েছে (কোনো পরিবর্তন করবেন না)
+const GOOGLE_SHEET_DATA_URL =https://docs.google.com/spreadsheets/d/14CNlEWMzS1bzb5U9RuW-za3M5dYxkFVOyHxSZ1g5FVQ/edit?usp=sharing/gviz/tq?tqx=out:json&sheet=PRODUCTS";
 
-let supabase;
-
-// পেজ লোড হওয়ার সাথে সাথে সুপাবেস ক্লায়েন্ট চালু করা
+// ২. কাস্টমার পেজ লোড হওয়ার প্রসেস
 window.addEventListener('DOMContentLoaded', () => {
-    if (window.supabase) {
-        supabase = .supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // এডমিন পেজ হলে ব্যাকগ্রাউন্ড কানেকশন চালু করা
-        if (document.getElementById('addProductForm')) {
-            setupAdminInterception();
-        }
-        
-        // কাস্টমার পেজ (index.html) হলে প্রোডাক্ট লোড করা
-        if (window.location.href.includes('index.html') || (!document.getElementById('addProductForm') && document.querySelector('.card'))) {
-            initCustomerPage();
-        }
-    } else {
-        console.error("Supabase CDN failed to load from HTML.");
+    const sampleCard = document.querySelector('.card');
+    // শুধুমাত্র ইনডেক্স/কাস্টমার পেজ হলে ডেটা লোড করবে
+    if (sampleCard && !document.getElementById('addProductForm')) {
+        loadProductsFromGoogleSheet(sampleCard);
     }
 });
 
-// ২. এডমিন পেজের ব্যাকগ্রাউন্ড লজিক (আপনার মূল কোড অপরিবর্তিত রেখে)
-function setupAdminInterception() {
-    const form = document.getElementById('addProductForm');
-    syncTableWithSupabase();
+async function loadProductsFromGoogleSheet(sampleCard) {
+    try {
+        const response = await fetch(GOOGLE_SHEET_DATA_URL);
+        const text = await response.text();
+        
+        // গুগল শিটের ডাটা সঠিকভাবে পার্স (Parse) করা
+        const jsonData = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = jsonData.table.rows;
+        
+        const gridContainer = sampleCard.parentElement;
+        if (!gridContainer) return;
 
-    form.addEventListener('submit', async () => {
-        const pname = document.getElementById('pname').value;
-        const price = document.getElementById('price').value;
-        const pimg = document.getElementById('pimg').value;
-
-        if(!pname || !price) return;
-
-        // সুপাবেস ডাটাবেজে প্রোডাক্ট পাঠানো
-        await supabase
-            .from('products')
-            .insert([{ 
-                name: pname, 
-                price: parseFloat(price), 
-                image_url: pimg || 'https://placeholder.com'
-            }]);
+        rows.forEach(row => {
+            if (!row.c) return;
             
-        // টেবিল রিফ্রেশ করা
-        setTimeout(syncTableWithSupabase, 800);
-    });
-}
+            // আপনার শিটের কলাম পজিশন: কলাম C (NAME), কলাম D (PRICE), কলাম E (Image_URL)
+            const name = row.c[2] ? row.c[2].v : null;
+            const price = row.c[3] ? row.c[3].v : null;
+            const imageUrl = row.c[4] ? row.c[4].v : 'https://placeholder.com';
 
-async function syncTableWithSupabase() {
-    const tableBody = document.getElementById('adminProductTable');
-    if (!tableBody) return;
-
-    const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('id', { ascending: false });
-
-    if (!error && products && products.length > 0) {
-        tableBody.innerHTML = '';
-        products.forEach(prod => {
-            const row = `<tr>
-                <td><img src="${prod.image_url}" width="50" style="border-radius:5px; object-fit:cover;"></td>
-                <td>${prod.name}</td>
-                <td>${prod.price} টাকা</td>
-                <td><button onclick="deleteSupabaseProduct(${prod.id})" style="background:#dc3545; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">মুছুন</button></td>
-            </tr>`;
-            tableBody.insertAdjacentHTML('beforeend', row);
+            // নাম এবং দাম থাকলে পণ্যটি ওয়েবসাইটে কার্ড আকারে যুক্ত হবে
+            if (name && price) {
+                const card = `
+                    <div class="card" style="margin: 10px; display: inline-block; vertical-align: top;">
+                        <div style="text-align:center;">
+                            <img src="${imageUrl}" width="120" height="120" style="object-fit:cover; border-radius:8px;">
+                        </div>
+                        <h3>${name}</h3>
+                        <p>${price} টাকা</p>
+                        <button class="btn-submit" onclick="addToCart('${name}', ${price})" style="width:100%;">কার্টে যোগ করুন</button>
+                    </div>
+                `;
+                gridContainer.insertAdjacentHTML('afterbegin', card);
+            }
         });
-    }
-}
-
-window.deleteSupabaseProduct = async (id) => {
-    if (confirm('আপনি কি পণ্যটি ডাটাবেজ থেকে মুছে ফেলতে চান?')) {
-        const { error } = await supabase.from('products').delete().eq('id', id);
-        if (!error) {
-            syncTableWithSupabase();
-        }
-    }
-};
-
-// ৩. কাস্টমার পেজের লজিক (index.html-এ প্রোডাক্ট কার্ড দেখানো)
-async function initCustomerPage() {
-    const sampleCard = document.querySelector('.card');
-    if (!sampleCard) return;
-    
-    const gridContainer = sampleCard.parentElement; 
-    if (!gridContainer) return;
-    
-    const { data: products, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('id', { ascending: false });
-
-    if (!error && products) {
-        products.forEach(prod => {
-            const card = `<div class="card" style="margin: 10px; display: inline-block; vertical-align: top;">
-                <div style="text-align:center;">
-                    <img src="${prod.image_url}" width="120" height="120" style="object-fit:cover; border-radius:8px;">
-                </div>
-                <h3>${prod.name}</h3>
-                <p>${prod.price} টাকা</p>
-                <button class="btn-submit" style="width:100%;">কার্টে যোগ করুন</button>
-            </div>`;
-            gridContainer.insertAdjacentHTML('afterbegin', card);
-        });
+    } catch (error) {
+        console.error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে:", error);
     }
 }
