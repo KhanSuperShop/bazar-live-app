@@ -1,28 +1,29 @@
-Load Supabase CDN Script safely
-const supabaseScript = document.createElement('script');
-supabaseScript.src = 'https://jsdelivr.net
-document.head.appendChild(supabaseScript);
-
+// ১. সুপাবেস ক্রেডেনশিয়াল (আপনার সঠিক প্রোজেক্ট লিঙ্ক ও কি)
 const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; 
 
 let supabase;
 
-supabaseScript.onload = () => {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Check if it is Admin Page
-    if (document.getElementById('addProductForm')) {
-        setupAdminInterception();
+// পেজ লোড হওয়ার সাথে সাথে সুপাবেস ক্লায়েন্ট চালু করা
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // এডমিন পেজ হলে ব্যাকগ্রাউন্ড কানেকশন চালু করা
+        if (document.getElementById('addProductForm')) {
+            setupAdminInterception();
+        }
+        
+        // কাস্টমার পেজ (index.html) হলে প্রোডাক্ট লোড করা
+        if (window.location.href.includes('index.html') || (!document.getElementById('addProductForm') && document.querySelector('.card'))) {
+            initCustomerPage();
+        }
+    } else {
+        console.error("Supabase CDN failed to load from HTML.");
     }
-    
-    // Check if it is Customer/Index Page
-    if (window.location.href.includes('index.html') || (!document.getElementById('addProductForm') && document.querySelector('.card'))) {
-        initCustomerPage();
-    }
-};
+});
 
-// 3. Admin Page Logic
+// ২. এডমিন পেজের ব্যাকগ্রাউন্ড লজিক (আপনার মূল কোড অপরিবর্তিত রেখে)
 function setupAdminInterception() {
     const form = document.getElementById('addProductForm');
     syncTableWithSupabase();
@@ -34,6 +35,7 @@ function setupAdminInterception() {
 
         if(!pname || !price) return;
 
+        // সুপাবেস ডাটাবেজে প্রোডাক্ট পাঠানো
         await supabase
             .from('products')
             .insert([{ 
@@ -42,6 +44,7 @@ function setupAdminInterception() {
                 image_url: pimg || 'https://placeholder.com'
             }]);
             
+        // টেবিল রিফ্রেশ করা
         setTimeout(syncTableWithSupabase, 800);
     });
 }
@@ -78,7 +81,7 @@ window.deleteSupabaseProduct = async (id) => {
     }
 };
 
-// 4. Customer Page Logic
+// ৩. কাস্টমার পেজের লজিক (index.html-এ প্রোডাক্ট কার্ড দেখানো)
 async function initCustomerPage() {
     const sampleCard = document.querySelector('.card');
     if (!sampleCard) return;
