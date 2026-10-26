@@ -1,9 +1,9 @@
-// ১. সুপাবেস সিডিএন স্ক্রিপ্ট লোড করা
+Load Supabase CDN Script safely
 const supabaseScript = document.createElement('script');
 supabaseScript.src = 'https://jsdelivr.net';
 document.head.appendChild(supabaseScript);
 
-const SUPABASE_URL = "https://supabase.co";
+const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; 
 
 let supabase;
@@ -11,18 +11,18 @@ let supabase;
 supabaseScript.onload = () => {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // এডমিন পেজ হলে ব্যাকগ্রাউন্ড কানেকশন চালু করা
+    // Check if it is Admin Page
     if (document.getElementById('addProductForm')) {
         setupAdminInterception();
     }
     
-    // কাস্টমার পেজ (index.html) হলে প্রোডাক্ট লোড করা
+    // Check if it is Customer/Index Page
     if (window.location.href.includes('index.html') || (!document.getElementById('addProductForm') && document.querySelector('.card'))) {
         initCustomerPage();
     }
 };
 
-// ৩. এডমিন পেজের লজিক
+// 3. Admin Page Logic
 function setupAdminInterception() {
     const form = document.getElementById('addProductForm');
     syncTableWithSupabase();
@@ -78,9 +78,8 @@ window.deleteSupabaseProduct = async (id) => {
     }
 };
 
-// ৪. কাস্টমার পেজের লজিক (সবচেয়ে নিরাপদ উপায়ে পণ্য যুক্ত করা)
+// 4. Customer Page Logic
 async function initCustomerPage() {
-    // যেকোনো একটি কার্ডের প্যারেন্ট বা মেইন কন্টেইনার খুঁজে বের করা
     const sampleCard = document.querySelector('.card');
     if (!sampleCard) return;
     
@@ -94,8 +93,7 @@ async function initCustomerPage() {
 
     if (!error && products) {
         products.forEach(prod => {
-            // আপনার মেইন ইনডেক্স পেজের কার্ডের এইচটিএমএল ডিজাইনের সাথে মিল রেখে তৈরি
-            const card = `<div class="card">
+            const card = `<div class="card" style="margin: 10px; display: inline-block; vertical-align: top;">
                 <div style="text-align:center;">
                     <img src="${prod.image_url}" width="120" height="120" style="object-fit:cover; border-radius:8px;">
                 </div>
@@ -103,7 +101,6 @@ async function initCustomerPage() {
                 <p>${prod.price} টাকা</p>
                 <button class="btn-submit" style="width:100%;">কার্টে যোগ করুন</button>
             </div>`;
-            // ডেমো প্রোডাক্টগুলোর সবার প্রথমে নতুন রিয়েল প্রোডাক্ট যুক্ত হবে
             gridContainer.insertAdjacentHTML('afterbegin', card);
         });
     }
