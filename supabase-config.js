@@ -11,33 +11,29 @@ let supabase;
 supabaseScript.onload = () => {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // এডমিন পেজ হলে সুপাবেস কানেক্ট করা
+    // এডমিন পেজ হলে ব্যাকগ্রাউন্ড কানেকশন চালু করা
     if (document.getElementById('addProductForm')) {
         setupAdminInterception();
     }
     
     // কাস্টমার পেজ (index.html) হলে প্রোডাক্ট লোড করা
-    if (document.querySelector('.admin-grid') && !document.getElementById('addProductForm')) {
+    if (window.location.href.includes('index.html') || (!document.getElementById('addProductForm') && document.querySelector('.card'))) {
         initCustomerPage();
     }
 };
 
-// ৩. এডমিন পেজের জন্য নিখুঁত ব্যাকগ্রাউন্ড কানেকশন (মূল কোডে কোনো পরিবর্তন ছাড়াই)
+// ৩. এডমিন পেজের লজিক
 function setupAdminInterception() {
     const form = document.getElementById('addProductForm');
-    
-    // সুপাবেস থেকে ডাটা এনে টেবিলে দেখানোর জন্য আপনার টেবিলকে ব্যাকগ্রাউন্ডে রিফ্রেশ করা
     syncTableWithSupabase();
 
     form.addEventListener('submit', async () => {
-        // আপনার মূল HTML এর ইনপুট আইডি থেকে মান নেওয়া
         const pname = document.getElementById('pname').value;
         const price = document.getElementById('price').value;
         const pimg = document.getElementById('pimg').value;
 
         if(!pname || !price) return;
 
-        // ব্যাকগ্রাউন্ডে সুপাবেস ডাটাবেজে প্রোডাক্ট পাঠিয়ে দেওয়া
         await supabase
             .from('products')
             .insert([{ 
@@ -46,12 +42,10 @@ function setupAdminInterception() {
                 image_url: pimg || 'https://placeholder.com'
             }]);
             
-        // টেবিলটি আপডেট করা
         setTimeout(syncTableWithSupabase, 800);
     });
 }
 
-// সুপাবেস থেকে ডাটা এনে টেবিলে সিঙ্ক করার ফাংশন
 async function syncTableWithSupabase() {
     const tableBody = document.getElementById('adminProductTable');
     if (!tableBody) return;
@@ -75,7 +69,6 @@ async function syncTableWithSupabase() {
     }
 }
 
-// সুপাবেস থেকে প্রোডাক্ট ডিলিট করার গ্লোবাল ফাংশন
 window.deleteSupabaseProduct = async (id) => {
     if (confirm('আপনি কি পণ্যটি ডাটাবেজ থেকে মুছে ফেলতে চান?')) {
         const { error } = await supabase.from('products').delete().eq('id', id);
@@ -85,9 +78,13 @@ window.deleteSupabaseProduct = async (id) => {
     }
 };
 
-// ৪. কাস্টমার পেজের লজিক (index.html-এ প্রোডাক্ট দেখানো)
+// ৪. কাস্টমার পেজের লজিক (সবচেয়ে নিরাপদ উপায়ে পণ্য যুক্ত করা)
 async function initCustomerPage() {
-    const gridContainer = document.querySelector('.admin-grid'); 
+    // যেকোনো একটি কার্ডের প্যারেন্ট বা মেইন কন্টেইনার খুঁজে বের করা
+    const sampleCard = document.querySelector('.card');
+    if (!sampleCard) return;
+    
+    const gridContainer = sampleCard.parentElement; 
     if (!gridContainer) return;
     
     const { data: products, error } = await supabase
@@ -96,11 +93,9 @@ async function initCustomerPage() {
         .order('id', { ascending: false });
 
     if (!error && products) {
-        // গিটহাবের স্ট্যাটিক ডেমো প্রোডাক্টগুলো সরাতে চাইলে নিচের লাইনটি আনকমেন্ট করতে পারেন
-        // gridContainer.innerHTML = ''; 
-        
         products.forEach(prod => {
-            const card = `<div class="card" style="margin: 10px; display: inline-block; vertical-align: top;">
+            // আপনার মেইন ইনডেক্স পেজের কার্ডের এইচটিএমএল ডিজাইনের সাথে মিল রেখে তৈরি
+            const card = `<div class="card">
                 <div style="text-align:center;">
                     <img src="${prod.image_url}" width="120" height="120" style="object-fit:cover; border-radius:8px;">
                 </div>
@@ -108,6 +103,7 @@ async function initCustomerPage() {
                 <p>${prod.price} টাকা</p>
                 <button class="btn-submit" style="width:100%;">কার্টে যোগ করুন</button>
             </div>`;
+            // ডেমো প্রোডাক্টগুলোর সবার প্রথমে নতুন রিয়েল প্রোডাক্ট যুক্ত হবে
             gridContainer.insertAdjacentHTML('afterbegin', card);
         });
     }
