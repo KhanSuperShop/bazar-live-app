@@ -1,3 +1,4 @@
+import { createClient } from 'https://jsdelivr.net';
 // ১. সুপাবেস ক্রেডেনশিয়াল (আপনার সঠিক প্রোজেক্ট লিঙ্ক ও কি)
 const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; 
@@ -7,7 +8,7 @@ let supabase;
 // পেজ লোড হওয়ার সাথে সাথে সুপাবেস ক্লায়েন্ট চালু করা
 window.addEventListener('DOMContentLoaded', () => {
     if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabase = .supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // এডমিন পেজ হলে ব্যাকগ্রাউন্ড কানেকশন চালু করা
         if (document.getElementById('addProductForm')) {
