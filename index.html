@@ -456,42 +456,52 @@ function decreaseQuantity(index) {
     <a href="admin.html" style="color: #2e7d32; text-decoration: none; font-weight: bold;">অ্যাডমিন লগইন</a>
 </div>
 <script>
-  // ১. আপনার SheetDB থেকে পাওয়া API লিংকটি নিচে 'YOUR_API_URL' এর জায়গায় বসান
-  const sheetDbUrl = 'https://script.google.com/macros/s/AKfycbyjLIxlGHFUV8Yc8G40OeCGglSV_JqXd6WzCMKnTzrOxz9VFG2ozd1gAZWk0DrqM-kH4w/exec'; 
+// ১. আপনার তৈরি করা গুগল ওয়েব অ্যাপ লিংক
+const sheetDbUrl = "https://script.google.com/macros/s/AKfycbyjLIxlGHFUV8Yc8G40OeCGglSV_JqXd6WzCMKnTzrOxz9VFG2ozd1gAZWk0DrqM-kH4w/exec
+";
 
-  // ২. গুগল শিট থেকে ডেটা নিয়ে আসার ফাংশন
-  async function loadProductsFromSheet() {
+// ২. গুগল শিট থেকে পণ্য লোড করার ফাংশন
+async function loadProductsFromSheet() {
     try {
-      const response = await fetch(sheetDbUrl);
-      const products = await response.json();
-      
-      // আপনার HTML-এর যে সেকশনে প্রোডাক্টগুলো দেখায়, তার মেইন কন্টেইনার
-      // (যদি কন্টেইনারের ক্লাস বা আইডি অন্য হয়, তবে নিচের selector টি পরিবর্তন করে নিন)
-      const container = document.querySelector('.grid') || document.getElementById('product-container'); 
-      
-      if (!container) return;
-      container.innerHTML = ''; // আগের স্ট্যাটিক প্রোডাক্টগুলো মুছে ফেলার জন্য
+        const response = await fetch(sheetDbUrl);
+        const products = await response.json();
+        
+        // আপনার সাইটের মেইন প্রোডাক্ট কন্টেইনার খুঁজে বের করা
+        const container = document.querySelector('.grid') || 
+                          document.getElementById('product-container') || 
+                          document.querySelector('.product-grid') ||
+                          document.querySelector('main > div');
 
-      products.forEach(product => {
-        // গুগল শিটের কলামের নামের সাথে হুবহু মিল রেখে ডেটা বসানো হচ্ছে
-        container.innerHTML += `
-          <div class="product-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; background: #fff;">
-            <div style="font-size: 50px; margin-bottom: 10px;">
-              <img src="${product.image}" alt="${product.name}" style="max-width: 100px; height: auto; border-radius: 5px;">
-            </div>
-            <h3 style="font-size: 16px; margin: 10px 0;">${product.name}</h3>
-            <p style="color: #27ae60; font-weight: bold; margin: 5px 0;">${product.price} টাকা</p>
-            <button class="add-to-cart-btn" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%;">কার্টে যোগ করুন</button>
-          </div>
-        `;
-      });
+        if (!container) {
+            console.error("প্রোডাক্ট দেখানোর জন্য কোনো গ্রিড বক্স পাওয়া যায়নি!");
+            return;
+        }
+
+        // আগের স্ট্যাটিক প্রোডাক্টগুলো স্ক্রিন থেকে মুছে ফেলা
+        container.innerHTML = ""; 
+
+        // ৩. লুপ চালিয়ে প্রতিটি পণ্য গুগল শিটের ডাটা অনুযায়ী বসানো
+        products.forEach(product => {
+            container.innerHTML += `
+                <div class="product-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div style="flex-grow: 1;">
+                        <img src="${product.image}" alt="${product.name}" style="max-width: 100px; height: 100px; object-fit: contain; margin-bottom: 10px;">
+                        <h3 style="font-size: 16px; margin: 10px 0; color: #333;">${product.name}</h3>
+                        <p style="color: #27ae60; font-weight: bold; margin: 5px 0;">${product.price} টাকা</p>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="addToCart('${product.name}', ${product.price})" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold;">কার্টে যোগ করুন</button>
+                </div>
+            `;
+        });
+        
+        console.log("গুগল শিটের সব পণ্য সফলভাবে লোড হয়েছে!");
     } catch (error) {
-      console.error('প্রোডাক্ট লোড করতে সমস্যা হয়েছে:', error);
+        console.error("গুগল শিট থেকে ডাটা লোড করার সময় সমস্যা হয়েছে:", error);
     }
-  }
+}
 
-  // ওয়েবসাইট লোড হওয়ার সাথে সাথে ফাংশনটি রান করবে
-  window.addEventListener('DOMContentLoaded', loadProductsFromSheet);
+// পেজ লোড হওয়া মাত্রই ফাংশনটি রান করবে
+window.addEventListener('DOMContentLoaded', loadProductsFromSheet);
 </script>
 </body>
 </html>
