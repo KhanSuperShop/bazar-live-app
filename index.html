@@ -34,46 +34,69 @@
     </div>
 
     <script>
-        // আপনার গুগল শিটের আইডি (লিংক থেকে স্বয়ংক্রিয়ভাবে নেওয়া)
-        const sheetId = '1vQjejo64MjLtJYqSmMnfKGpG4uVb45SQsxOc5RfSncEnR811rZFNfFnlR2B99M5ysriDO8RdvkBYTMl';
-        // শিটের প্রথম ট্যাবের ডেটা JSON হিসেবে পাওয়ার লিংক
-        const jsonUrl = `https://google.com{sheetId}/gviz/tq?tqx=out:json`;
+        // আপনার গুগল শিটের আসল লাইভ CSV লিঙ্ক
+        const csvUrl = 'https://google.com';
+
+        // CSV ডেটা নিখুঁতভাবে লাইনে এবং কলামে ভাগ করার ফাংশন
+        function parseCSV(text) {
+            let lines = [];
+            let row = [""];
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let next = text[i+1];
+
+                if (c === '"') {
+                    if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (c === ',' && !inQuotes) {
+                    row.push('');
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && next === '\n') { i++; }
+                    lines.push(row);
+                    row = [''];
+                } else {
+                    row[row.length - 1] += c;
+                }
+            }
+            if (row.length > 1 || row[0] !== '') { lines.push(row); }
+            return lines;
+        }
 
         async function fetchProducts() {
             try {
-                const response = await fetch(jsonUrl);
-                const text = await response.text();
+                const response = await fetch(csvUrl);
+                const data = await response.text();
                 
-                // গুগল রেসপন্স থেকে বিশুদ্ধ JSON ডেটা আলাদা করা
-                const jsonStart = text.indexOf('{');
-                const jsonEnd = text.lastIndexOf('}') + 1;
-                const jsonData = JSON.parse(text.slice(jsonStart, jsonEnd));
-                
-                const rows = jsonData.table.rows;
+                // প্রথম হেডার লাইন বাদ দিয়ে বাকি লাইনগুলো নেওয়া
+                const parsedRows = parseCSV(data).slice(1); 
                 const container = document.getElementById('productContainer');
                 container.innerHTML = ''; 
 
                 let count = 0;
 
-                rows.forEach(row => {
-                    // শিটের কলাম অনুসারে ডেটা নেওয়া (0=Name, 1=Price, 2=Image, 3=Category)
-                    const name = row.c[0] ? row.c[0].v : '';
-                    const price = row.c[1] ? row.c[1].v : '';
-                    const imgUrl = row.c[2] ? row.c[2].v : '';
-                    const category = row.c[3] ? row.c[3].v : 'Grocery';
+                parsedRows.forEach(columns => {
+                    if (columns.length >= 3) {
+                        const name = columns[0] ? columns[0].trim() : '';
+                        const price = columns[1] ? columns[1].trim() : '';
+                        const imgUrl = columns[2] ? columns[2].trim() : '';
+                        const category = columns[3] ? columns[3].trim() : 'Grocery';
 
-                    if (name && price) {
-                        count++;
-                        const card = document.createElement('div');
-                        card.className = 'product-card';
-                        card.innerHTML = `
-                            <span class="category-badge">${category}</span>
-                            <img src="${imgUrl}" alt="${name}" onerror="this.src='https://placeholder.com'">
-                            <div class="product-title">${name}</div>
-                            <div class="product-price">${price} ৳</div>
-                            <button class="buy-btn">অর্ডার করুন</button>
-                        `;
-                        container.appendChild(card);
+                        // শুধুমাত্র নাম এবং দাম থাকলে পণ্যটি দেখাবে
+                        if (name && price) {
+                            count++;
+                            const card = document.createElement('div');
+                            card.className = 'product-card';
+                            card.innerHTML = `
+                                <span class="category-badge">${category}</span>
+                                <img src="${imgUrl}" alt="${name}" onerror="this.src='https://placeholder.com'">
+                                <div class="product-title">${name}</div>
+                                <div class="product-price">${price} ৳</div>
+                                <button class="buy-btn">অর্ডার করুন</button>
+                            `;
+                            container.appendChild(card);
+                        }
                     }
                 });
 
@@ -82,7 +105,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                document.getElementById('productContainer').innerHTML = '<div class="loading" style="color:red;">পণ্য লোড করা যায়নি! আপনার গুগল শিটের ফাইলটি সবার জন্য উন্মুক্ত (Anyone with link) করা আছে কিনা নিশ্চিত করুন।</div>';
+                document.getElementById('productContainer').innerHTML = '<div class="loading" style="color:red;">পণ্য লোড করা যায়নি! আপনার ইন্টারনেট কানেকশন অথবা গুগল শিটের লিংকটি চেক করুন।</div>';
             }
         }
 
