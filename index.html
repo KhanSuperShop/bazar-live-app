@@ -87,6 +87,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            height: 100%;
         }
         .product-card img {
             width: 100px;
@@ -209,7 +210,7 @@
     <header>
         <div class="header-container">
             <div class="logo">
-                <h1> khan সুুপার শপ 🛒</h1>
+                <h1> khan সুপার শপ 🛒</h1>
             </div>
             <div>
                 <button class="cart-icon-btn">
@@ -223,70 +224,17 @@
         <!-- Products Grid Section -->
         <div class="products-section">
             <h2>আমাদের মুদি পণ্যসমূহ</h2>
-            <div class="products-grid">
-                
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/5029/5029236.png" alt="মিনিকেট চাল">
-                    <div>
-                        <div class="product-title">মিনিকেট চাল (১ কেজি)</div>
-                        <div class="product-price">৭০ টাকা</div>
-                    </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('মিনিকেট চাল', 70)">কার্টে যোগ করুন</button>
-                </div>
-
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3081/3081958.png" alt="সয়াবিন তেল">
-                    <div>
-                        <div class="product-title">সয়াবিন তেল (১ লিটার)</div>
-                        <div class="product-price">১৬৫ টাকা</div>
-                    </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('সয়াবিন তেল', 165)">কার্টে যোগ করুন</button>
-                </div>
-
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/7250/7250811.png" alt="মসুর ডাল">
-                    <div>
-                        <div class="product-title">মসুর ডাল (১ কেজি)</div>
-                        <div class="product-price">১৩০ টাকা</div>
-                    </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('মসুর ডাল', 130)">কার্টে যোগ করুন</button>
-                </div>
-
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/5029/5029272.png" alt="চিনি">
-                    <div>
-                        <div class="product-title">প্যাকেট চিনি (১ কেজি)</div>
-                        <div class="product-price">১৩৫ টাকা</div>
-                    </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('প্যাকেট চিনি', 135)">কার্টে যোগ করুন</button>
-                </div>
-
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3465/3465389.png" alt="পেঁয়াজ">
-                    <div>
-                        <div class="product-title">দেশী পেঁয়াজ (১ কেজি)</div>
-                        <div class="product-price">৯৫ টাকা</div>
-                    </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('দেশী পেঁয়াজ', 95)">কার্টে যোগ করুন</button>
-                </div>
-
-                <div class="product-card">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1041/1041373.png" alt="আলু">
-                    <div>
-                        <div class="product-title">বগুড়ার আলু (১ কেজি)</div>
-                        <div class="product-price">৫৫ টাকা</div>
-                    </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('বগুড়ার আলু', 55)">কার্টে যোগ করুন</button>
-                </div>
-
+            <div class="products-grid" id="productsGrid">
+                <!-- গুগল শিটের পণ্যগুলো অটোমেটিক এখানে চলে আসবে -->
+                <p style="text-align: center; padding: 20px; color: #777;">পণ্য লোড হচ্ছে...</p>
             </div>
         </div>
 
-        <!-- Sidebar Cart & Checkout Section -->
+        <!-- Shopping Cart / Checkout Sidebar Section -->
         <div class="sidebar-section">
             <h3>বাজারের থলি (Cart)</h3>
             <div id="cartItemsContainer">
-                <p class="empty-cart-msg">আপনার থলি খালি আছে। পণ্য যোগ করুন।</p>
+                <p class="empty-cart-msg">আপনার থলি খালি আছে! পণ্য যোগ করুন।</p>
             </div>
             
             <div class="cart-total">
@@ -295,170 +243,32 @@
             </div>
 
             <!-- Checkout Form -->
-            <div class="checkout-form">
-                <h3>ডেলিভারি তথ্য</h3>
-                <form id="orderForm" onsubmit="checkoutToWhatsApp(event)">
-                    <div class="form-group">
-                        <label for="name">আপনার নাম *</label>
-                        <input type="text" id="name" required placeholder="যেমন: মো: রহিম">
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">মোবাইল নাম্বার *</label>
-                        <input type="tel" id="phone" required placeholder="যেমন: 017XXXXXXXX">
-                    </div>
-                    <div class="form-group">
-                        <label for="address">পূর্ণাঙ্গ ঠিকানা *</label>
-                        <textarea id="address" rows="3" required placeholder="গ্রাম/রোড, থানা, জেলা উল্লেখ করুন"></textarea>
-                    </div>
-                    <button type="submit" class="whatsapp-order-btn">
-                        🟢 হোয়াটসঅ্যাপে অর্ডার করুন
-                    </button>
-                </form>
-            </div>
+            <form class="checkout-form" id="orderForm" onsubmit="sendOrder(event)">
+                <div class="form-group">
+                    <label for="customerName">আপনার নাম *</label>
+                    <input type="text" id="customerName" placeholder="যেমন: মোঃ রহিম" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">মোবাইল নাম্বার *</label>
+                    <input type="tel" id="customerPhone" placeholder="যেমন: 017XXXXXXXX" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerAddress">পূর্ণাঙ্গ ঠিকানা *</label>
+                    <textarea id="customerAddress" rows="3" placeholder="গ্রাম/রোড, থানা, জেলা উল্লেখ করুন" required></textarea>
+                </div>
+                <button type="submit" class="whatsapp-order-btn">
+                    💬 হোয়াটসঅ্যাপে অর্ডার করুন
+                </button>
+            </form>
         </div>
     </div>
 
-    <script>
-        // কার্ট ডাটাবেজ
-        let cart = [];
-
-        // কার্টে পণ্য যোগ করার ফাংশন
-        function addToCart(name, price) {
-            // চেক করা হচ্ছে পণ্যটি অলরেডি কার্টে আছে কিনা
-            const existingItem = cart.find(item => item.name === name);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ name: name, price: price, quantity: 1 });
-            }
-            
-            updateCartUI();
-        }
-
-        // কার্ট থেকে আইটেম রিমুভ করার ফাংশন
-        function removeFromCart(name) {
-            cart = cart.filter(item => item.name !== name);
-            updateCartUI();
-        }
-
-        // কার্ট ইন্টারফেস আপডেট করার ফাংশন// কার্ট ইন্টারফেস আপডেট করার ফাংশন
-function updateCartUI() {
-    const cartItemsContainer = document.getElementById('cartItemsContainer');
-    const cartCount = document.getElementById('cartCount');
-    const cartTotalAmount = document.getElementById('cartTotalAmount');
-
-    if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<p class="empty-cart-msg">আপনার থলি খালি আছে। পণ্য যোগ করুন</p>';
-        cartCount.innerText = '০';
-        cartTotalAmount.innerText = '০';
-        return;
-    }
-
-    let totalItems = 0;
-    let totalPrice = 0;
-    let html = '';
-
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        totalPrice += itemTotal;
-        totalItems += item.quantity;
-
-        html += `
-            <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <strong>${item.name}</strong>
-                    
-                    <!-- প্লাস-মাইনাস বাটনের নতুন অংশ -->
-                    <div style="display: inline-flex; align-items: center; gap: 5px;">
-                        <button onclick="decreaseQuantity(${index})" style="background-color: #e53935; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">-</button>
-                        <span style="font-weight: bold; min-width: 20px; text-align: center; color: #2e7d32;">${item.quantity}</span>
-                        <button onclick="increaseQuantity(${index})" style="background-color: #4caf50; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">+</button>
-                    </div>
-                </div>
-                <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
-                    <span>${itemTotal} টাকা</span>
-                    <button class="cart-item-remove" onclick="removeFromCart('${item.name}')" style="background: none; border: none; color: #ff0000; font-weight: bold; cursor: pointer; font-size: 16px;">X</button>
-                </div>
-            </div>
-        `;
-    });
-
-    cartItemsContainer.innerHTML = html;
-    cartCount.innerText = totalItems;
-    cartTotalAmount.innerText = totalPrice;
-}
-
-// প্লাস (+) বাটনে ক্লিক করলে পরিমাণ বাড়ানোর ফাংশন
-function increaseQuantity(index) {
-    cart[index].quantity += 1;
-    updateCartUI();
-}
-
-// মাইনাস (-) বাটনে ক্লিক করলে পরিমাণ কমানোর ফাংশন
-function decreaseQuantity(index) {
-    if (cart[index].quantity > 1) {
-        cart[index].quantity -= 1;
-    } else {
-        // ১ এর কম হলে কার্ট থেকে পণ্যটি স্বয়ংক্রিয়ভাবে মুছে যাবে
-        cart.splice(index, 1);
-    }
-    updateCartUI();
-}
-
-        // হোয়াটসঅ্যাপে অর্ডার পাঠানোর মূল ফাংশন
-        function checkoutToWhatsApp(event) {
-            event.preventDefault(); // পেজ রিলোড বন্ধ করা
-
-            if (cart.length === 0) {
-                alert("আপনার কার্ট খালি! অনুগ্রহ করে পণ্য যোগ করুন।");
-                return;
-            }
-
-            // কাস্টমার ইনফো
-            const customerName = document.getElementById('name').value;
-            const customerPhone = document.getElementById('phone').value;
-            const customerAddress = document.getElementById('address').value;
-            const totalAmount = document.getElementById('cartTotalAmount').innerText;
-
-            // পণ্যের তালিকা মেসেজ ফরম্যাটে রূপান্তর করা
-            let productListMessage = '';
-            cart.forEach((item, index) => {
-                productListMessage += `${index + 1}. ${item.name} - ${item.quantity}টি = ${item.price * item.quantity} টাকা\n`;
-            });
-
-            // আপনার সঠিক হোয়াটসঅ্যাপ নাম্বার (৮৮ সহ)
-            const whatsappNumber = "8801749672230";
-
-            // মেসেজ টেমপ্লেট মেকিং
-            const orderMessage = `*🛍️ নতুন অর্ডার - খান সুপার শপ*\n` +
-                                 `-----------------------------------------\n` +
-                                 `*কাস্টমার প্রোফাইল:*\n` +
-                                 `👤 নাম: ${customerName}\n` +
-                                 `📞 মোবাইল: ${customerPhone}\n` +
-                                 `📍 ঠিকানা: ${customerAddress}\n` +
-                                 `-----------------------------------------\n` +
-                                 `*অর্ডারকৃত পণ্যের তালিকা:*\n${productListMessage}` +
-                                 `-----------------------------------------\n` +
-                                 `*💵 সর্বমোট প্রদেয় বিল:* ${totalAmount} টাকা\n` +
-                                 `-----------------------------------------\n` +
-                                 `অর্ডারটি দ্রুত নিশ্চিত করুন। ধন্যবাদ!`;
-
-            // হোয়াটসঅ্যাপ লিংক জেনারেট এবং ওপেন করা
-            const encodedMessage = encodeURIComponent(orderMessage);
-            const finalWhatsAppUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-
-            // নতুন ট্যাবে লিংকটি ওপেন করবে
-            window.open(finalWhatsAppUrl, '_blank');
-        }
-    </script>
-<div style="text-align: center; padding: 20px; background: #eee; margin-top: 50px;">
-    <a href="admin.html" style="color: #2e7d32; text-decoration: none; font-weight: bold;">অ্যাডমিন লগইন</a>
-</div>
 <script>
 // ১. আপনার তৈরি করা গুগল ওয়েব অ্যাপ লিংক
-const sheetDbUrl = "https://script.google.com/macros/s/AKfycbyjLIxlGHFUV8Yc8G40OeCGglSV_JqXd6WzCMKnTzrOxz9VFG2ozd1gAZWk0DrqM-kH4w/exec
-";
+const sheetDbUrl = "https://google.com";
+
+// গ্লোবাল কার্ট ভ্যারিয়েবল
+let cart = [];
 
 // ২. গুগল শিট থেকে পণ্য লোড করার ফাংশন
 async function loadProductsFromSheet() {
@@ -466,42 +276,43 @@ async function loadProductsFromSheet() {
         const response = await fetch(sheetDbUrl);
         const products = await response.json();
         
-        // আপনার সাইটের মেইন প্রোডাক্ট কন্টেইনার খুঁজে বের করা
-        const container = document.querySelector('.grid') || 
-                          document.getElementById('product-container') || 
-                          document.querySelector('.product-grid') ||
-                          document.querySelector('main > div');
+        const container = document.getElementById('productsGrid');
+        if (!container) return;
 
-        if (!container) {
-            console.error("প্রোডাক্ট দেখানোর জন্য কোনো গ্রিড বক্স পাওয়া যায়নি!");
-            return;
-        }
+        container.innerHTML = ""; // ডামি লোডিং মেসেজ মুছে ফেলা
 
-        // আগের স্ট্যাটিক প্রোডাক্টগুলো স্ক্রিন থেকে মুছে ফেলা
-        container.innerHTML = ""; 
-
-        // ৩. লুপ চালিয়ে প্রতিটি পণ্য গুগল শিটের ডাটা অনুযায়ী বসানো
         products.forEach(product => {
+            // দাম সংখ্যায় রূপান্তর
+            const priceNum = parseInt(product.price) || 0;
+            
             container.innerHTML += `
-                <div class="product-item" style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; background: #fff; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <div style="flex-grow: 1;">
-                        <img src="${product.image}" alt="${product.name}" style="max-width: 100px; height: 100px; object-fit: contain; margin-bottom: 10px;">
-                        <h3 style="font-size: 16px; margin: 10px 0; color: #333;">${product.name}</h3>
-                        <p style="color: #27ae60; font-weight: bold; margin: 5px 0;">${product.price} টাকা</p>
+                <div class="product-card">
+                    <img src="${product.image}" alt="${product.name}">
+                    <div>
+                        <div class="product-title">${product.name}</div>
+                        <div class="product-price">${priceNum} টাকা</div>
                     </div>
-                    <button class="add-to-cart-btn" onclick="addToCart('${product.name}', ${product.price})" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold;">কার্টে যোগ করুন</button>
+                    <button class="add-to-cart-btn" onclick="addToCart('${product.name}', ${priceNum})">কার্টে যোগ করুন</button>
                 </div>
             `;
         });
-        
-        console.log("গুগল শিটের সব পণ্য সফলভাবে লোড হয়েছে!");
     } catch (error) {
-        console.error("গুগল শিট থেকে ডাটা লোড করার সময় সমস্যা হয়েছে:", error);
+        console.error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে:", error);
+        document.getElementById('productsGrid').innerHTML = '<p style="color:red; text-align:center;">পণ্য লোড করতে ব্যর্থ হয়েছে!</p>';
     }
 }
 
-// পেজ লোড হওয়া মাত্রই ফাংশনটি রান করবে
-window.addEventListener('DOMContentLoaded', loadProductsFromSheet);
-</script>
-</body>
-</html>
+// ৩. কার্টে পণ্য যোগ করার ফাংশন
+function addToCart(name, price) {
+    const existingItem = cart.find(item => item.name === name);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({ name: name, price: price, quantity: 1 });
+    }
+    updateCartUI();
+}
+
+// ৪. কার্ট থেকে পণ্য কমানো বা মোছার ফাংশন
+function removeFromCart(name) {
+    cart = cart.filter(item => item.name !== name);
