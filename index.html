@@ -3,300 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khan সুপার শপ 🛒</title>
+    <title>খান সুপার শপ</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #f4f6f9;
-            color: #333;
-        }
-        /* Navbar Styling */
-        .navbar {
-            background-color: #27ae60;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        /* Main Layout */
-        .main-container {
-            display: flex;
-            flex-wrap: wrap;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 15px;
-            gap: 20px;
-        }
-        /* Products Section */
-        .products-section {
-            flex: 3;
-            min-width: 300px;
-        }
-        .section-title {
-            margin-bottom: 20px;
-            font-size: 22px;
-            color: #2c3e50;
-            border-bottom: 2px solid #27ae60;
-            padding-bottom: 5px;
-        }
-        .loading-text {
-            font-size: 18px;
-            color: #7f8c8d;
-            text-align: center;
-            margin-top: 5px;
-        }
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
-        }
-        .product-card {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s;
-        }
-        .product-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .product-card img {
-            max-width: 100%;
-            height: 120px;
-            object-fit: contain;
-            margin-bottom: 10px;
-        }
-        .product-card h3 {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-        .product-card .price {
-            color: #27ae60;
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 12px;
-        }
-        .add-btn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.2s;
-        }
-        .add-btn:hover {
-            background-color: #219150;
-        }
-        /* Cart Section */
-        .cart-section {
-            flex: 1;
-            min-width: 280px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            height: fit-content;
-        }
-        .cart-items {
-            list-style: none;
-            margin-bottom: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-        .remove-btn {
-            color: #e74c3c;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            background: none;
-            margin-left: 5px;
-        }
-        .total-box {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            color: #2c3e50;
-        }
-        /* Form Styling */
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #555;
-        }
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .checkout-btn {
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-        .checkout-btn:hover {
-            background-color: #d35400;
-        }
-        .admin-link {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            background: #eee;
-        }
-        .admin-link a {
-            color: #2e7d32;
-            text-decoration: none;
-            font-weight: bold;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; }
+        header { background-color: #27ae60; color: white; text-align: center; padding: 20px; font-size: 26px; font-weight: bold; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05); text-align: center; padding: 15px; border: 1px solid #eee; position: relative; }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+        .category-badge { position: absolute; top: 10px; right: 10px; background: #27ae60; color: white; padding: 4px 8px; font-size: 12px; border-radius: 20px; text-transform: uppercase; }
+        .product-title { font-size: 18px; font-weight: bold; margin: 15px 0 5px 0; }
+        .product-price { color: #e74c3c; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .buy-btn { background-color: #e67e22; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
+        .buy-btn:hover { background-color: #d35400; }
+        .loading { text-align: center; font-size: 18px; color: #777; grid-column: 1 / -1; padding: 40px; }
     </style>
 </head>
 <body>
 
-    <div class="navbar">Khan সুপার শপ 🛒</div>
+    <header>🏪 খান সুপার শপ</header>
 
-    <div class="main-container">
-        <!-- Products Grid Container -->
-        <div class="products-section">
-            <h2 class="section-title">আমাদের মুদি পণ্যসমূহ</h2>
-            <div id="product-container" class="product-grid">
-                <p class="loading-text">পণ্য লোড হচ্ছে...</p>
-            </div>
+    <div class="container">
+        <h2>🛍️ আমাদের পণ্যসমূহ</h2>
+        <br>
+        <div class="product-grid" id="productContainer">
+            <div class="loading">পণ্য লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>
         </div>
-
-        <!-- Checkout / Cart Container -->
-        <div class="cart-section">
-            <h2 class="section-title" style="font-size: 18px; border-bottom: 1px solid #ccc;">বাজারের থলি (Cart)</h2>
-            <ul id="cart-items" class="cart-items">
-                <p style="color: #999; font-size: 14px; text-align: center; padding: 10px 0;">আপনার থলি খালি আছে। পণ্য যোগ করুন।</p>
-            </ul>
-            
-            <div class="total-box">
-                <span>সর্বমোট:</span>
-                <span><span id="cart-total">0</span> টাকা</span>
-            </div>
-
-            <form id="order-form">
-                <div class="form-group">
-                    <label for="customerName">আপনার নাম *</label>
-                    <input type="text" id="customerName" placeholder="যেমন: মোঃ রহিম" required>
-                </div>
-                <div class="form-group">
-                    <label for="customerMobile">মোবাইল নাম্বার *</label>
-                    <input type="tel" id="customerMobile" placeholder="যেমন: 017XXXXXXXX" required>
-                </div>
-                <div class="form-group">
-                    <label for="customerAddress">পূর্ণাঙ্গ ঠিকানা *</label>
-                    <textarea id="customerAddress" rows="2" placeholder="গ্রাম/রোড, থানা, জেলা উল্লেখ করুন" required></textarea>
-                </div>
-                <button type="submit" class="checkout-btn">💬 হোয়াটসঅ্যাপে অর্ডার করুন</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="admin-link">
-        <a href="admin.html">অ্যাডমিন প্যানেল</a>
     </div>
 
     <script>
-        // ১. আপনার গুগল ওয়েব অ্যাপের আসল লিংকটি নিচে দেওয়া হলো
-        const sheetDbUrl = "https://sheetdb.io/api/v1/se5vnrhuc2fpx";
-        
-        let cart = [];
+        // আপনার গুগল শিটের লাইভ সিএসভি লিঙ্ক
+        const googleSheetCsvUrl = 'https://google.com';
 
-        // ২. গুগল শিট থেকে পণ্য এনে ওয়েবসাইটে দেখানো
-        async function loadProductsFromSheet() {
+        async function fetchProducts() {
             try {
-                const response = await fetch(sheetDbUrl);
-                const products = await response.json();
+                const response = await fetch(googleSheetCsvUrl);
+                const data = await response.text();
                 
-                const container = document.getElementById('product-container');
-                if (!container) return;
+                // লাইন ব্রেক হ্যান্ডেল করার জন্য সঠিক রেজেক্স (Regex) ব্যবহার
+                const rows = data.split(/\r?\n/).slice(1); 
+                const container = document.getElementById('productContainer');
+                container.innerHTML = ''; 
 
-                container.innerHTML = ""; // লোডিং টেক্সট মুছে ফেলা
+                rows.forEach(row => {
+                    // কমা দিয়ে আলাদা করা, তবে কোটেশনের ভেতরের কমা এড়ানোর জন্য রেজেক্স
+                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    
+                    if (columns.length >= 4 && columns[0].trim() !== '') {
+                        const name = columns[0].replace(/"/g, '').trim();
+                        const price = columns[1].replace(/"/g, '').trim();
+                        const imgUrl = columns[2].replace(/"/g, '').trim();
+                        const category = columns[3].replace(/"/g, '').trim();
 
-                products.forEach(product => {
-                    container.innerHTML += `
-                        <div class="product-card">
-                            <div>
-                                <img src="${product.image}" alt="${product.name}">
-                                <h3>${product.name}</h3>
-                                <div class="price">${product.price} টাকা</div>
-                            </div>
-                            <button class="add-btn" onclick="addToCart('${product.name}', ${product.price})">কার্টে যোগ করুন</button>
-                        </div>
-                    `;
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.innerHTML = `
+                            <span class="category-badge">${category}</span>
+                            <img src="${imgUrl}" alt="${name}" onerror="this.src='https://placeholder.com'">
+                            <div class="product-title">${name}</div>
+                            <div class="product-price">${price} ৳</div>
+                            <button class="buy-btn">অর্ডার করুন</button>
+                        `;
+                        container.appendChild(card);
+                    }
                 });
             } catch (error) {
-                console.error("ডাটা লোড করতে সমস্যা হয়েছে:", error);
-                document.getElementById('product-container').innerHTML = '<p class="loading-text" style="color:red;">পণ্য লোড করতে ব্যর্থ হয়েছে। গুগল স্ক্রিপ্ট ডেপ্লয়মেন্ট চেক করুন।</p>';
+                console.error(error);
+                document.getElementById('productContainer').innerHTML = '<div class="loading" style="color:red;">পণ্য লোড করা যায়নি! গুগল শিটের শেয়ার সেটিংস চেক করুন।</div>';
             }
         }
 
-        // ৩. কার্টে পণ্য যোগ করা
-        function addToCart(name, price) {
-            const existingItem = cart.find(item => item.name === name);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ name: name, price: price, quantity: 1 });
-            }
-            updateCartUI();
-        }
-
-        // ৪. কার্ট থেকে পণ্য কমানো বা বাদ দেওয়া
-        function removeFromCart(name) {
-            cart = cart.filter(item => item.name !== name);
-            updateCartUI();
-        }
-
-        // ৫. কার্টের ইউজার ইন্টারফেস আপডেট করা
-        function updateCartUI() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartTotalContainer = document.getElementById('cart-total');
-            
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p style="color: #999; font-size: 14px; text-align: center; padding: 10px 0;">আপনার থলি খালি আছে। পণ্য যোগ করুন।</p>';
-                cartTotalContainer.innerText = "0";
-                return;
-            }
-
+        fetchProducts();
+    </script>
+</body>
+</html>
