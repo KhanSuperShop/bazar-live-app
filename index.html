@@ -7,17 +7,19 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
         body { background-color: #f4f6f9; color: #333; }
-        header { background-color: #27ae60; color: white; text-align: center; padding: 20px; font-size: 26px; font-weight: bold; }
+        header { background-color: #27ae60; color: white; text-align: center; padding: 20px; font-size: 26px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        h2 { border-bottom: 2px solid #27ae60; padding-bottom: 10px; margin-bottom: 20px; color: #2c3e50; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05); text-align: center; padding: 15px; border: 1px solid #eee; position: relative; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05); text-align: center; padding: 15px; border: 1px solid #eee; position: relative; transition: transform 0.2s; }
+        .product-card:hover { transform: translateY(-5px); }
         .product-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
-        .category-badge { position: absolute; top: 10px; right: 10px; background: #27ae60; color: white; padding: 4px 8px; font-size: 12px; border-radius: 20px; text-transform: uppercase; }
-        .product-title { font-size: 18px; font-weight: bold; margin: 15px 0 5px 0; }
+        .category-badge { position: absolute; top: 10px; right: 10px; background: #27ae60; color: white; padding: 4px 8px; font-size: 12px; border-radius: 20px; text-transform: uppercase; font-weight: bold; }
+        .product-title { font-size: 18px; font-weight: bold; margin: 15px 0 5px 0; color: #333; }
         .product-price { color: #e74c3c; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-        .buy-btn { background-color: #e67e22; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; }
+        .buy-btn { background-color: #e67e22; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; transition: background 0.2s; }
         .buy-btn:hover { background-color: #d35400; }
-        .loading { text-align: center; font-size: 18px; color: #777; grid-column: 1 / -1; padding: 40px; }
+        .loading { text-align: center; font-size: 18px; color: #777; grid-column: 1 / -1; padding: 40px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -26,37 +28,42 @@
 
     <div class="container">
         <h2>🛍️ আমাদের পণ্যসমূহ</h2>
-        <br>
         <div class="product-grid" id="productContainer">
             <div class="loading">পণ্য লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>
         </div>
     </div>
 
     <script>
-        // আপনার গুগল শিটের লাইভ সিএসভি লিঙ্ক
-        const googleSheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQjejo64MjLtJYqSmMnfKGpG4uVb45SQsxOc5RfSncEnR811rZFNfFnlR2B99M5ysriDO8RdvkBYTMl/pub?output=csv
-';
+        // আপনার গুগল শিটের আইডি (লিংক থেকে স্বয়ংক্রিয়ভাবে নেওয়া)
+        const sheetId = '1vQjejo64MjLtJYqSmMnfKGpG4uVb45SQsxOc5RfSncEnR811rZFNfFnlR2B99M5ysriDO8RdvkBYTMl';
+        // শিটের প্রথম ট্যাবের ডেটা JSON হিসেবে পাওয়ার লিংক
+        const jsonUrl = `https://google.com{sheetId}/gviz/tq?tqx=out:json`;
 
         async function fetchProducts() {
             try {
-                const response = await fetch(googleSheetCsvUrl);
-                const data = await response.text();
+                const response = await fetch(jsonUrl);
+                const text = await response.text();
                 
-                // লাইন ব্রেক হ্যান্ডেল করার জন্য সঠিক রেজেক্স (Regex) ব্যবহার
-                const rows = data.split(/\r?\n/).slice(1); 
+                // গুগল রেসপন্স থেকে বিশুদ্ধ JSON ডেটা আলাদা করা
+                const jsonStart = text.indexOf('{');
+                const jsonEnd = text.lastIndexOf('}') + 1;
+                const jsonData = JSON.parse(text.slice(jsonStart, jsonEnd));
+                
+                const rows = jsonData.table.rows;
                 const container = document.getElementById('productContainer');
                 container.innerHTML = ''; 
 
-                rows.forEach(row => {
-                    // কমা দিয়ে আলাদা করা, তবে কোটেশনের ভেতরের কমা এড়ানোর জন্য রেজেক্স
-                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    
-                    if (columns.length >= 4 && columns[0].trim() !== '') {
-                        const name = columns[0].replace(/"/g, '').trim();
-                        const price = columns[1].replace(/"/g, '').trim();
-                        const imgUrl = columns[2].replace(/"/g, '').trim();
-                        const category = columns[3].replace(/"/g, '').trim();
+                let count = 0;
 
+                rows.forEach(row => {
+                    // শিটের কলাম অনুসারে ডেটা নেওয়া (0=Name, 1=Price, 2=Image, 3=Category)
+                    const name = row.c[0] ? row.c[0].v : '';
+                    const price = row.c[1] ? row.c[1].v : '';
+                    const imgUrl = row.c[2] ? row.c[2].v : '';
+                    const category = row.c[3] ? row.c[3].v : 'Grocery';
+
+                    if (name && price) {
+                        count++;
                         const card = document.createElement('div');
                         card.className = 'product-card';
                         card.innerHTML = `
@@ -69,9 +76,13 @@
                         container.appendChild(card);
                     }
                 });
+
+                if (count === 0) {
+                    container.innerHTML = '<div class="loading">গুগল শিটে কোনো পণ্য খুঁজে পাওয়া যায়নি! প্রথমে শিটে পণ্য যোগ করুন।</div>';
+                }
             } catch (error) {
                 console.error(error);
-                document.getElementById('productContainer').innerHTML = '<div class="loading" style="color:red;">পণ্য লোড করা যায়নি! গুগল শিটের শেয়ার সেটিংস চেক করুন।</div>';
+                document.getElementById('productContainer').innerHTML = '<div class="loading" style="color:red;">পণ্য লোড করা যায়নি! আপনার গুগল শিটের ফাইলটি সবার জন্য উন্মুক্ত (Anyone with link) করা আছে কিনা নিশ্চিত করুন।</div>';
             }
         }
 
