@@ -264,6 +264,297 @@
             this.reset();
             alert('পণ্যটি সফলভাবে যুক্ত হয়েছে!');
         });
+// সুপাবেস ডাটাবেজে পণ্যটি পাঠানোর জন্য
+if (typeof saveProductToSupabase === "function") {
+    saveProductToSupabase(name, price, img);
+}
+
+        // পণ্য মুছে ফেলার ফাংশন
+       function deleteProduct(index) {
+    if(confirm('আপনি কি নিশ্চিত যে পণ্যটি মুছে ফেলতে চান?')) {
+        
+        // ১. আগে সুপাবেস থেকে ডিলিট করার জন্য কল করুন (এটি উপরে থাকবে)
+        if (typeof deleteProductFromSupabase === "function") {
+            deleteProductFromSupabase(products[index].name);
+        }
+
+        // ২. তারপর লোকাল লিস্ট থেকে মুছুন (এটি নিচে থাকবে)
+        products.splice(index, 1);
+        renderAdminTable();
+    }
+}
+    </script>
+<script src="https://jsdelivr.net"></script>
+<script src="supabase-bazar.js"></script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>খান সুপার শপ - অ্যাডমিন প্যানেল</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+        }
+        /* সাইডবার ডিজাইন */
+        .sidebar {
+            width: 260px;
+            background-color: #1b5e20;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
+        }
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 10px;
+        }
+        .sidebar a {
+            display: block;
+            color: #e8f5e9;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .sidebar a.active, .sidebar a:hover {
+            background-color: #2e7d32;
+            color: white;
+        }
+        /* মেইন কন্টেন্ট এরিয়া */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 40px;
+        }
+        .header-title {
+            color: #1b5e20;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #1b5e20;
+            padding-bottom: 5px;
+        }
+        /* ফরম এবং টেবিল গ্রিড */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        @media (max-width: 992px) {
+            .admin-grid { grid-template-columns: 1fr; }
+        }
+        /* কার্ড ডিজাইন */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+        .card h3 {
+            margin-bottom: 15px;
+            color: #2e7d32;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-submit {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background-color: #1b5e20; }
+        /* টেবিল ডিজাইন */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #2e7d32;
+            color: white;
+        }
+        .btn-delete {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete:hover { background-color: #b71c1c; }
+    </style>
+</head>
+<body>
+
+    <!-- সাইডবার নেভিগেশন -->
+    <div class="sidebar">
+        <h2>خان সুপার শপ 🛒</h2>
+        <a href="#" class="active">📦 পণ্য ম্যানেজমেন্ট</a>
+        <a href="#">📋 অর্ডার লিস্ট</a>
+        <a href="#">👥 কাস্টমারস</a>
+        <!-- এখানে index.html এর জায়গায় আপনার মেইন কাস্টমার পেজের সঠিক ফাইলের নাম দিন -->
+        <a href="index.html" style="margin-top: 50px; background-color: #c62828; text-align: center;">🏠 মেইন ওয়েবসাইটে যান</a>
+    </div>
+
+    <!-- মেইন কন্টেন্ট -->
+    <div class="main-content">
+        <h2 class="header-title">ড্যাশবোর্ড / পণ্য ম্যানেজমেন্ট</h2>
+        
+        <div class="admin-grid">
+            <!-- নতুন পণ্য যোগ করার ফরম -->
+            <div class="card">
+                <h3>নতুন পণ্য যোগ করুন</h3>
+                <form id="addProductForm">
+                    <div class="form-group">
+                        <label for="pName">পণ্যের নাম *</label>
+                        <input type="text" id="pName" placeholder="উদা: দেশী পেঁয়াজ (১ কেজি)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pPrice">মূল্য (টাকা) *</label>
+                        <input type="number" id="pPrice" placeholder="উদা: ৯৫" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pImg">ছবির লিংক (ঐচ্ছিক)</label>
+                        <!-- এখান থেকে required কেটে ঐচ্ছিক করা হয়েছে -->
+                        <input type="url" id="pImg" placeholder="https://example.com">
+                    </div>
+                    <button type="submit" class="btn-submit">পণ্য যুক্ত করুন</button>
+                </form>
+            </div>
+
+            <!-- বর্তমান পণ্যের তালিকা -->
+            <div class="card">
+                <h3>বর্তমান পণ্যের তালিকা</h3>
+                <div style="overflow-x: auto; margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ছবি</th>
+                                <th>পণ্যের নাম</th>
+                                <th>মূল্য</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductTable">
+                            <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে পণ্য লোড হবে -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// আপনার admin.html ফাইলের <script> ট্যাগের একদম প্রথম লাইনে এটি বসান
+(function() {
+    let password = prompt("খান সুপার শপ - অ্যাডমিন প্যানেলে ঢুকতে সিকিউরিটি পাসওয়ার্ড দিন:");
+    
+    // এখানে 'khan1234' হলো আপনার পাসওয়ার্ড, আপনি চাইলে এটি পরিবর্তন করতে পারেন
+    if (password !== "khan1234") { 
+        alert("❌ ভুল পাসওয়ার্ড! আপনাকে মেইন কাস্টমার পেজে ফেরত পাঠানো হচ্ছে।");
+        window.location.href = "index.html"; // ভুল পাসওয়ার্ড দিলে মেইন পেজে পাঠিয়ে দেবে
+    } else {
+        alert("✅ সফলভাবে লগইন হয়েছে! স্বাগতম অ্যাডমিন প্যানেলে।");
+    }
+})();
+
+        // ডিফল্ট কোনো ছবি না দিলে এই আইকনটি দেখাবে
+        const defaultImage = 'https://flaticon.com';
+
+        // শুরুর কিছু ডেমো প্রোডাক্ট লিস্ট
+        let initialProducts = [
+            { id: 1, name: 'মিনিকেট চাল (১ কেজি)', price: 70, img: 'https://flaticon.com' },
+            { id: 2, name: 'সয়াবিন তেল (১ লিটার)', price: 165, img: 'https://flaticon.com' },
+            { id: 3, name: 'মসুর ডাল (১ কেজি)', price: 130, img: 'https://flaticon.com' }
+        ];
+
+        // লোকাল স্টোরেজ থেকে পণ্য নিয়ে আসা
+        let products = JSON.parse(localStorage.getItem('shopProducts')) || initialProducts;
+
+        // টেবিল আপডেট করার ফাংশন
+        function renderAdminTable() {
+            const tableBody = document.getElementById('adminProductTable');
+            let html = '';
+            
+            products.forEach((product, index) => {
+                // ছবি না থাকলে ডিফল্ট ইমেজ বসবে
+                const productImg = product.img ? product.img : defaultImage;
+                
+                html += `
+                    <tr>
+                        <td><img src="${productImg}" width="35" height="35" style="object-fit:contain;"></td>
+                        <td><strong>${product.name}</strong></td>
+                        <td>${product.price} টাকা</td>
+                        <td><button class="btn-delete" onclick="deleteProduct(${index})">মুছুন</button></td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = html;
+            // লোকাল স্টোরেজে ডাটা আপডেট সেভ করা
+            localStorage.setItem('shopProducts', JSON.stringify(products));
+        }
+
+        // নতুন পণ্য যোগ করার লজিক
+        document.getElementById('addProductForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('pName').value;
+            const price = parseInt(document.getElementById('pPrice').value);
+            let img = document.getElementById('pImg').value.trim();
+
+            // কাস্টমার ছবি না দিলে ডিফল্ট ছবি সেট হবে
+            if(!img) {
+                img = defaultImage;
+            }
+
+            products.push({ id: Date.now(), name: name, price: price, img: img });
+            renderAdminTable();
+            
+            this.reset();
+            alert('পণ্যটি সফলভাবে যুক্ত হয়েছে!');
+        });
 
         // পণ্য মুছে ফেলার ফাংশন
         function deleteProduct(index) {
