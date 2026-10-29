@@ -319,145 +319,150 @@
                 </form>
             </div>
         </div>
-    </div>
-    <script>
-        <!-- সুপাবেস মেইন লাইব্রেরি -->
+</div>
+
+<!-- ১. সুপাবেস মেইন লাইব্রেরি (এটি আলাদা থাকবে) -->
 <script src="https://jsdelivr.net"></script>
-<!-- আপনার তৈরি করা সুপাবেস ফাইল -->
-<script src="supabase-bazar.js"></script>
-        // কার্ট ডাটাবেজ
-        let cart = [];
 
-        // কার্টে পণ্য যোগ করার ফাংশন
-        function addToCart(name, price) {
-            // চেক করা হচ্ছে পণ্যটি অলরেডি কার্টে আছে কিনা
-            const existingItem = cart.find(item => item.name === name);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ name: name, price: price, quantity: 1 });
-            }
-            
-            updateCartUI();
+<!-- ২. আপনার মেইন কার্ট এবং হোয়াটসঅ্যাপ অর্ডারের জাভাস্ক্রিপ্ট কোড -->
+<script>
+    // কার্ট ডাটাবেজ
+    let cart = [];
+
+    // কার্টে পণ্য যোগ করার ফাংশন
+    function addToCart(name, price) {
+        // চেক করা হচ্ছে পণ্যটি অলরেডি কার্টে আছে কিনা
+        const existingItem = cart.find(item => item.name === name);
+        
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({ name: name, price: price, quantity: 1 });
         }
-
-        // কার্ট থেকে আইটেম রিমুভ করার ফাংশন
-        function removeFromCart(name) {
-            cart = cart.filter(item => item.name !== name);
-            updateCartUI();
-        }
-
-        // কার্ট ইন্টারফেস আপডেট করার ফাংশন// কার্ট ইন্টারফেস আপডেট করার ফাংশন
-function updateCartUI() {
-    const cartItemsContainer = document.getElementById('cartItemsContainer');
-    const cartCount = document.getElementById('cartCount');
-    const cartTotalAmount = document.getElementById('cartTotalAmount');
-
-    if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<p class="empty-cart-msg">আপনার থলি খালি আছে। পণ্য যোগ করুন</p>';
-        cartCount.innerText = '০';
-        cartTotalAmount.innerText = '০';
-        return;
+        
+        updateCartUI();
     }
 
-    let totalItems = 0;
-    let totalPrice = 0;
-    let html = '';
+    // কার্ট থেকে আইটেম রিমুভ করার ফাংশন
+    function removeFromCart(name) {
+        cart = cart.filter(item => item.name !== name);
+        updateCartUI();
+    }
 
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        totalPrice += itemTotal;
-        totalItems += item.quantity;
+    // কার্ট ইন্টারফেস আপডেট করার ফাংশন
+    function updateCartUI() {
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const cartCount = document.getElementById('cartCount');
+        const cartTotalAmount = document.getElementById('cartTotalAmount');
 
-        html += `
-            <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <strong>${item.name}</strong>
-                    
-                    <!-- প্লাস-মাইনাস বাটনের নতুন অংশ -->
-                    <div style="display: inline-flex; align-items: center; gap: 5px;">
-                        <button onclick="decreaseQuantity(${index})" style="background-color: #e53935; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">-</button>
-                        <span style="font-weight: bold; min-width: 20px; text-align: center; color: #2e7d32;">${item.quantity}</span>
-                        <button onclick="increaseQuantity(${index})" style="background-color: #4caf50; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">+</button>
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p class="empty-cart-msg">আপনার থলি খালি আছে। পণ্য যোগ করুন</p>';
+            cartCount.innerText = '০';
+            cartTotalAmount.innerText = '০';
+            return;
+        }
+
+        let totalItems = 0;
+        let totalPrice = 0;
+        let html = '';
+
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.quantity;
+            totalPrice += itemTotal;
+            totalItems += item.quantity;
+
+            html += `
+                <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <strong>${item.name}</strong>
+                        
+                        <!-- প্লাস-মাইনাস বাটনের নতুন অংশ -->
+                        <div style="display: inline-flex; align-items: center; gap: 5px;">
+                            <button onclick="decreaseQuantity(${index})" style="background-color: #e53935; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">-</button>
+                            <span style="font-weight: bold; min-width: 20px; text-align: center; color: #2e7d32;">${item.quantity}</span>
+                            <button onclick="increaseQuantity(${index})" style="background-color: #4caf50; color: white; border: none; width: 24px; height: 24px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">+</button>
+                        </div>
+                    </div>
+                    <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
+                        <span>${itemTotal} টাকা</span>
+                        <button class="cart-item-remove" onclick="removeFromCart('${item.name}')" style="background: none; border: none; color: #ff0000; font-weight: bold; cursor: pointer; font-size: 16px;">X</button>
                     </div>
                 </div>
-                <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
-                    <span>${itemTotal} টাকা</span>
-                    <button class="cart-item-remove" onclick="removeFromCart('${item.name}')" style="background: none; border: none; color: #ff0000; font-weight: bold; cursor: pointer; font-size: 16px;">X</button>
-                </div>
-            </div>
-        `;
-    });
+            `;
+        });
 
-    cartItemsContainer.innerHTML = html;
-    cartCount.innerText = totalItems;
-    cartTotalAmount.innerText = totalPrice;
-}
-
-// প্লাস (+) বাটনে ক্লিক করলে পরিমাণ বাড়ানোর ফাংশন
-function increaseQuantity(index) {
-    cart[index].quantity += 1;
-    updateCartUI();
-}
-
-// মাইনাস (-) বাটনে ক্লিক করলে পরিমাণ কমানোর ফাংশন
-function decreaseQuantity(index) {
-    if (cart[index].quantity > 1) {
-        cart[index].quantity -= 1;
-    } else {
-        // ১ এর কম হলে কার্ট থেকে পণ্যটি স্বয়ংক্রিয়ভাবে মুছে যাবে
-        cart.splice(index, 1);
+        cartItemsContainer.innerHTML = html;
+        cartCount.innerText = totalItems;
+        cartTotalAmount.innerText = totalPrice;
     }
-    updateCartUI();
-}
 
-        // হোয়াটসঅ্যাপে অর্ডার পাঠানোর মূল ফাংশন
-        function checkoutToWhatsApp(event) {
-            event.preventDefault(); // পেজ রিলোড বন্ধ করা
+    // প্লাস (+) বাটনে ক্লিক করলে পরিমাণ বাড়ানোর ফাংশন
+    function increaseQuantity(index) {
+        cart[index].quantity += 1;
+        updateCartUI();
+    }
 
-            if (cart.length === 0) {
-                alert("আপনার কার্ট খালি! অনুগ্রহ করে পণ্য যোগ করুন।");
-                return;
-            }
-
-            // কাস্টমার ইনফো
-            const customerName = document.getElementById('name').value;
-            const customerPhone = document.getElementById('phone').value;
-            const customerAddress = document.getElementById('address').value;
-            const totalAmount = document.getElementById('cartTotalAmount').innerText;
-
-            // পণ্যের তালিকা মেসেজ ফরম্যাটে রূপান্তর করা
-            let productListMessage = '';
-            cart.forEach((item, index) => {
-                productListMessage += `${index + 1}. ${item.name} - ${item.quantity}টি = ${item.price * item.quantity} টাকা\n`;
-            });
-
-            // আপনার সঠিক হোয়াটসঅ্যাপ নাম্বার (৮৮ সহ)
-            const whatsappNumber = "8801749672230";
-
-            // মেসেজ টেমপ্লেট মেকিং
-            const orderMessage = `*🛍️ নতুন অর্ডার - খান সুপার শপ*\n` +
-                                 `-----------------------------------------\n` +
-                                 `*কাস্টমার প্রোফাইল:*\n` +
-                                 `👤 নাম: ${customerName}\n` +
-                                 `📞 মোবাইল: ${customerPhone}\n` +
-                                 `📍 ঠিকানা: ${customerAddress}\n` +
-                                 `-----------------------------------------\n` +
-                                 `*অর্ডারকৃত পণ্যের তালিকা:*\n${productListMessage}` +
-                                 `-----------------------------------------\n` +
-                                 `*💵 সর্বমোট প্রদেয় বিল:* ${totalAmount} টাকা\n` +
-                                 `-----------------------------------------\n` +
-                                 `অর্ডারটি দ্রুত নিশ্চিত করুন। ধন্যবাদ!`;
-
-            // হোয়াটসঅ্যাপ লিংক জেনারেট এবং ওপেন করা
-            const encodedMessage = encodeURIComponent(orderMessage);
-            const finalWhatsAppUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-
-            // নতুন ট্যাবে লিংকটি ওপেন করবে
-            window.open(finalWhatsAppUrl, '_blank');
+    // মাইনাস (-) বাটনে ক্লিক করলে পরিমাণ কমানোর ফাংশন
+    function decreaseQuantity(index) {
+        if (cart[index].quantity > 1) {
+            cart[index].quantity -= 1;
+        } else {
+            // ১ এর কম হলে কার্ট থেকে পণ্যটি স্বয়ংক্রিয়ভাবে মুছে যাবে
+            cart.splice(index, 1);
         }
-    </script>
+        updateCartUI();
+    }
+
+    // হোয়াটসঅ্যাপে অর্ডার পাঠানোর মূল ফাংশন
+    function checkoutToWhatsApp(event) {
+        event.preventDefault(); // পেজ রিলোড বন্ধ করা
+
+        if (cart.length === 0) {
+            alert("আপনার কার্ট খালি! অনুগ্রহ করে পণ্য যোগ করুন।");
+            return;
+        }
+
+        // কাস্টমার ইনফো
+        const customerName = document.getElementById('name').value;
+        const customerPhone = document.getElementById('phone').value;
+        const customerAddress = document.getElementById('address').value;
+        const totalAmount = document.getElementById('cartTotalAmount').innerText;
+
+        // পণ্যের তালিকা মেসেজ ফরম্যাটে রূপান্তর করা
+        let productListMessage = '';
+        cart.forEach((item, index) => {
+            productListMessage += `${index + 1}. ${item.name} - ${item.quantity}টি = ${item.price * item.quantity} টাকা\n`;
+        });
+
+        // আপনার সঠিক হোয়াটসঅ্যাপ নাম্বার (৮৮ সহ)
+        const whatsappNumber = "8801749672230";
+
+        // মেসেজ টেমপ্লেট মেকিং
+        const orderMessage = `*🛍️ নতুন অর্ডার - খান সুপার শপ*\n` +
+                             `-----------------------------------------\n` +
+                             `*কাস্টমার প্রোফাইল:*\n` +
+                             `👤 নাম: ${customerName}\n` +
+                             `📞 মোবাইল: ${customerPhone}\n` +
+                             `📍 ঠিকানা: ${customerAddress}\n` +
+                             `-----------------------------------------\n` +
+                             `*অর্ডারকৃত পণ্যের তালিকা:*\n${productListMessage}` +
+                             `-----------------------------------------\n` +
+                             `*💵 সর্বমোট প্রদেয় বিল:* ${totalAmount} টাকা\n` +
+                             `-----------------------------------------\n` +
+                             `অর্ডারটি দ্রুত নিশ্চিত করুন। ধন্যবাদ!`;
+
+        // হোয়াটসঅ্যাপ লিংক জেনারেট এবং ওপেন করা
+        const encodedMessage = encodeURIComponent(orderMessage);
+        const finalWhatsAppUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
+        // নতুন ট্যাবে লিংকটি ওপেন করবে
+        window.open(finalWhatsAppUrl, '_blank');
+    }
+</script>
+
+<!-- ৩. সবার শেষে সুপাবেস ফাইলটি রান হবে (যাতে এটি উপরের addToCart ফাংশন খুঁজে পায়) -->
+<script src="supabase-bazar.js"></script>
+
 <div style="text-align: center; padding: 20px; background: #eee; margin-top: 50px;">
     <a href="admin.html" style="color: #2e7d32; text-decoration: none; font-weight: bold;">অ্যাডমিন লগইন</a>
 </div>
