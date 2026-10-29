@@ -1,6 +1,6 @@
 // ১. সুপাবেস কানেক্ট করা (আপনার দেওয়া ইউআরএল এবং কী অনুযায়ী)
 const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co";
-const SUPABASE_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; // এখানে আপনার আসল ANON_KEY টি বসিয়ে দিন
+const SUPABASE_KEY = "sb_secret_A4el8vXIwiHGtos-nHGl9g_UonQ0uDJ"; // এখানে আপনার আসল ANON_KEY টি বসিয়ে দিন
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ২. ডেটাবেস থেকে পণ্য নিয়ে আসার মূল ফাংশন
