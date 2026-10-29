@@ -224,7 +224,10 @@
         <div class="products-section">
             <h2>আমাদের মুদি পণ্যসমূহ</h2>
             <div class="products-grid">
-                
+              <div id="product-list" class="আপনার-আসল-ক্লাসের-নাম">
+   <!-- এখানে জাভাস্ক্রিপ্ট নিজে থেকেই পণ্য বসিয়ে দেবে, ডামি পণ্যগুলো কেটে দিতে পারেন -->
+</div>
+  
                 <div class="product-card">
                     <img src="https://cdn-icons-png.flaticon.com/512/5029/5029236.png" alt="মিনিকেট চাল">
                     <div>
@@ -317,8 +320,11 @@
             </div>
         </div>
     </div>
-
     <script>
+        <!-- সুপাবেস মেইন লাইব্রেরি -->
+<script src="https://jsdelivr.net"></script>
+<!-- আপনার তৈরি করা সুপাবেস ফাইল -->
+<script src="supabase-bazar.js"></script>
         // কার্ট ডাটাবেজ
         let cart = [];
 
