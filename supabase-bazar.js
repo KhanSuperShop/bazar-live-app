@@ -1,44 +1,39 @@
-// ১. সুপাবেস কানেকশন কনফিগারেশন
-const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co"; 
-const SUPABASE_ANON_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; 
+// ১. সুপাবেস কানেক্ট করা (আপনার আসল URL এবং Key বসাবেন)
+const SUPABASE_URL = 'https://atihyfukytqfvlzkwkpa.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ২. সুপাবেস ক্লায়েন্ট তৈরি
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-console.log("Supabase connected with KhanSuperShop!");
+// ২. ডেটাবেস থেকে পণ্য নিয়ে আসার মূল ফাংশন
+async function fetchProducts() {
+    const { data: products, error } = await supabase
+        .from('products')
+        .select('*');
 
-// ৩. সুপাবেস থেকে ডাটা তুলে এনে কাস্টমার পেজে দেখানোর ফাংশন
-async function fetchProductsFromSupabase() {
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .select('*');
-
-        if (error) {
-            console.error("সুপাবেস থেকে পণ্য আনতে সমস্যা:", error.message);
-            return [];
-        }
-        return data; 
-    } catch (err) {
-        console.error("ত্রুটি:", err);
-        return [];
+    if (error) {
+        console.error('সুপাবেস থেকে পণ্য আনতে সমস্যা হয়েছে:', error);
+        return;
     }
+
+    // আপনার HTML-এর যে ডিভ (div) এর ভেতরে পণ্যগুলো থাকে সেটির আইডি (id)
+    const productContainer = document.getElementById('product-list'); 
+    if (!productContainer) return;
+
+    productContainer.innerHTML = ''; // আগের ডামি পণ্যগুলো মুছে ফেলা
+
+    // ৩. লুপের মাধ্যমে সুপাবেসের পণ্যগুলো আপনার ডিজাইনে বসানো
+    products.forEach(product => {
+        const productHTML = `
+            <div class="product-item">
+                <img src="${product.image_url}" alt="${product.name}" style="width:100%; max-width:150px; border-radius:8px;">
+                <h3>${product.name}</h3>
+                <p class="price">${product.price} টাকা</p>
+                <!-- আপনার index.html-এর আসল addToCart ফাংশনটি এখানে কল হবে -->
+                <button onclick="addToCart('${product.name}', ${product.price})">কার্টে যোগ করুন</button>
+            </div>
+        `;
+        productContainer.innerHTML += productHTML;
+    });
 }
 
-// ৪. অ্যাডমিন পেজ থেকে পণ্য সুপাবেসে সেভ করার ফাংশন
-async function saveProductToSupabase(name, price, imageUrl) {
-    try {
-        const { data, error } = await supabase
-            .from('products')
-            .insert([{ name: name, price: parseFloat(price), image_url: imageUrl }]);
-
-        if (error) {
-            console.error("সুপাবেসে পণ্য সেভ করতে সমস্যা:", error.message);
-        } else {
-            console.log("পণ্যটি সফলভাবে সুpabase-এ সেভ হয়েছে!");
-            alert("পণ্যটি সফলভাবে যুক্ত হয়েছে!");
-            location.reload(); 
-        }
-    } catch (err) {
-        console.error("ত্রুটি:", err);
-    }
-}
+// পেজ লোড হওয়ার সাথে সাথে পণ্যগুলো চলে আসবে
+document.addEventListener('DOMContentLoaded', fetchProducts);
