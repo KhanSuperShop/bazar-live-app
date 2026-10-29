@@ -14,6 +14,39 @@ async function fetchProducts() {
         return;
     }
 
+    // আপনার ওয়েবসাইটের আসল মেইন কন্টেইনার ক্লাস হচ্ছে .products
+    const productContainer = document.querySelector('.products'); 
+    if (!productContainer) return;
+
+    productContainer.innerHTML = ''; // আগের পুরোনো বা ডামি পণ্যগুলো সম্পূর্ণ মুছে ফেলা
+
+    // ৩. লুপের মাধ্যমে সুpabase-এর পণ্যগুলো আপনার হুবহু ডিজাইনে বসানো
+    products.forEach(product => {
+        const productHTML = `
+            <div class="product-item">
+                <img src="${product.image_url}" alt="${product.name}">
+                <h3>${product.name}</h3>
+                <p class="price">${product.price} টাকা</p>
+                <button onclick="addToCart('${product.name}', ${product.price})">কার্টে যোগ করুন</button>
+            </div>
+        `;
+        productContainer.innerHTML += productHTML;
+    });
+}
+
+// পেজ লোড হওয়ার সাথে সাথে সুপাবেস থেকে ৩০টি পণ্য স্ক্রিনে চলে আসবে
+document.addEventListener('DOMContentLoaded', fetchProducts);
+// ২. ডেটাবেস থেকে পণ্য নিয়ে আসার মূল ফাংশন
+async function fetchProducts() {
+    const { data: products, error } = await supabase
+        .from('products')
+        .select('*');
+
+    if (error) {
+        console.error('সুপাবেস থেকে পণ্য আনতে সমস্যা হয়েছে:', error);
+        return;
+    }
+
     // আপনার HTML-এর যে ডিভ (div) এর ভেতরে পণ্যগুলো থাকে সেটির আইডি (id)
     const productContainer = document.getElementById('product-list'); 
     if (!productContainer) return;
