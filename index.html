@@ -203,13 +203,16 @@
             padding: 20px 0;
         }
     </style>
+
+    <!-- সুপাবেস কানেক্ট করার লাইব্রেরি (CDN) -->
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
     <header>
         <div class="header-container">
             <div class="logo">
-                <h1> khan সুুপার শপ 🛒</h1>
+                <h1> khan সুপার শপ 🛒</h1>
             </div>
             <div>
                 <button class="cart-icon-btn">
@@ -223,30 +226,10 @@
         <!-- Products Grid Section -->
         <div class="products-section">
             <h2>আমাদের মুদি পণ্যসমূহ</h2>
-            <div class="products-grid">
-              <div id="product-list" class="আপনার-আসল-ক্লাসের-নাম">
-   <!-- এখানে জাভাস্ক্রিপ্ট নিজে থেকেই পণ্য বসিয়ে দেবে, ডামি পণ্যগুলো কেটে দিতে পারেন -->
-</div>
-<!-- আমাদের মুদি পণ্যসমূহ শিরোনাম (শুধু একবার থাকবে) -->
-<h2 style="text-align: center; color: #2e7d32; margin-top: 20px;">আমাদের মুদি পণ্যসমূহ</h2>
-<hr style="border: 1px solid #2e7d32; width: 80%; margin: 0 auto 20px auto;">
-
-<!-- পণ্য দেখানোর মেইন কন্টেইনার (ডিজাইন গ্রিড ঠিক রাখার জন্য) -->
-<div class="products" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto;">
-    <!-- সুপাবেসের জাভাস্ক্রিপ্ট স্বয়ংক্রিয়ভাবে এখানে ৩০টি পণ্যের চমৎকার কার্ড বসিয়ে দেবে -->
-</div>
-
-<!-- পণ্য দেখানোর মেইন কন্টেইনার (এটি অবশ্যই থাকতে হবে) -->
-<div class="products">
-    <!-- সুপাবেসের জাভাস্ক্রিপ্ট স্বয়ংক্রিয়ভাবে এখানে ৩০টি পণ্য ঢুকিয়ে দেবে -->
-</div>
-
-<!-- এর ঠিক নিচেই আপনার কার্ট সেকশন যেভাবে আছে সেভাবে শুরু হবে -->
-<div class="cart-container">
-    <h3>বাজারের থলি (Cart)</h3>
-    <!-- আপনার কার্টের বাকি কোড... -->
-<div class="products"></div>
+            <div class="products-grid" id="productGrid">
+                <!-- ডাটাবেস থেকে আসা পণ্য এখানে দেখাবে -->
             </div>
+        </div>
 
         <!-- Sidebar Cart & Checkout Section -->
         <div class="sidebar-section">
@@ -263,134 +246,64 @@
             <!-- Checkout Form -->
             <div class="checkout-form">
                 <h3>ডেলিভারি তথ্য</h3>
-                <form id="orderForm" onsubmit="checkoutToWhatsApp(event)">
+                <form id="orderForm">
                     <div class="form-group">
                         <label for="name">আপনার নাম *</label>
-                        <input type="text" id="name" required placeholder="যেমন: মো: রহিম">
+                        <input type="text" id="name" placeholder="যেমন: মো: রহিম" required>
                     </div>
                     <div class="form-group">
                         <label for="phone">মোবাইল নাম্বার *</label>
-                        <input type="tel" id="phone" required placeholder="যেমন: 017XXXXXXXX">
+                        <input type="tel" id="phone" placeholder="যেমন: 017XXXXXXXX" required>
                     </div>
                     <div class="form-group">
                         <label for="address">পূর্ণাঙ্গ ঠিকানা *</label>
-                        <textarea id="address" rows="3" required placeholder="গ্রাম/রোড, থানা, জেলা উল্লেখ করুন"></textarea>
+                        <textarea id="address" rows="3" placeholder="গ্রাম/রোড, থানা, জেলা উল্লেখ করুন" required></textarea>
                     </div>
                     <button type="submit" class="whatsapp-order-btn">
-                        🟢 হোয়াটসঅ্যাপে অর্ডার করুন
+                        🟢 হোয়াটসঅ্যাপে অর্ডার করুন
                     </button>
                 </form>
             </div>
         </div>
-</div>
-  <!-- সুপাবেস মেইন লাইব্রেরি (CDN) -->
-  <script src="https://jsdelivr.net"></script>
+    </div>
 
-  <script>
-    // আপনার আসল কার্ট লজিক
-    let cart = [];
+    <script>
+        // আপনার সুপাবেস প্রজেক্টের সঠিক তথ্য এখানে দিন
+        const SUPABASE_URL = "https://atihyfukytqfvlzkwkpa.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_7U9jd7NsYONos-EKa05NJg_CTl4-4ZE"; // ড্যাশবোর্ড থেকে anon public কী-টি এখানে বসান
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function addToCart(name, price) {
-      const existingItem = cart.find(item => item.name === name);
-      if (existingItem) {
-        existingItem.quantity += 1;
-      } else {
-        cart.push({ name: name, price: price, quantity: 1 });
-      }
-      updateCartUI();
-    }
+        let cart = []; 
+        let allProducts = []; 
 
-    function removeFromCart(name) {
-      cart = cart.filter(item => item.name !== name);
-      updateCartUI();
-    }
+        async function loadProducts() {
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">পণ্য লোড হচ্ছে...</p>';
 
-    function updateCartUI() {
-      const cartItemsContainer = document.getElementById('cartItemsContainer');
-      if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<p class="empty-cart-message">আপনার কার্ট খালি আছে। পণ্য যোগ করুন</p>';
-        document.getElementById('cartTotalAmount').innerText = "০";
-        return;
-      }
+            const { data: products, error } = await supabase
+                .from('products')
+                .select('*');
 
-      let totalItems = 0;
-      let totalPrice = 0;
-      let html = '';
+            if (error) {
+                console.error("ডাটা আনতে সমস্যা হয়েছে:", error.message);
+                productGrid.innerHTML = `<p style="grid-column: 1/-1; color:red; text-align:center;">পণ্য লোড করা যায়নি! এরর: ${error.message}</p>`;
+                return;
+            }
 
-      cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        totalItems += item.quantity;
-        totalPrice += itemTotal;
+            allProducts = products; 
+            productGrid.innerHTML = ''; 
 
-        html += `
-          <div class="cart-item">
-            <span>${item.name} - ${itemTotal} টাকা</span>
-            <div class="quantity-controls">
-              <button onclick="decreaseQuantity(${index})">-</button>
-              <span>${item.quantity}</span>
-              <button onclick="increaseQuantity(${index})">+</button>
-              <button onclick="removeFromCart('${item.name}')" style="background:red; margin-left:10px;">মুছুন</button>
-            </div>
-          </div>
-        `;
-      });
+            if(products.length === 0) {
+                productGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">কোনো পণ্য পাওয়া যায়নি।</p>';
+                return;
+            }
 
-      cartItemsContainer.innerHTML = html;
-      document.getElementById('cartTotalAmount').innerText = totalPrice;
-    }
-
-    function increaseQuantity(index) {
-      cart[index].quantity += 1;
-      updateCartUI();
-    }
-
-    function decreaseQuantity(index) {
-      if (cart[index].quantity > 1) {
-        cart[index].quantity -= 1;
-      } else {
-        cart.splice(index, 1);
-      }
-      updateCartUI();
-    }
-
-    function checkoutToWhatsApp(event) {
-      event.preventDefault();
-      if (cart.length === 0) {
-        alert("আপনার কার্ট খালি! অনুগ্রহ করে পণ্য যোগ করুন।");
-        return;
-      }
-
-      const customerName = document.getElementById('customerName').value;
-      const customerPhone = document.getElementById('phone').value;
-      const customerAddress = document.getElementById('address').value;
-
-      if (!customerName || !customerPhone || !customerAddress) {
-        alert("অনুগ্রহ করে আপনার নাম, মোবাইল নম্বর এবং পূর্ণ ঠিকানা লিখুন।");
-        return;
-      }
-
-      let productListMessage = '';
-      let totalAmount = 0;
-
-      cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        totalAmount += itemTotal;
-        productListMessage += `${index + 1}. ${item.name} - [সংখ্যা: ${item.quantity}] - [মূল্য: ${itemTotal} টাকা]\n`;
-      });
-
-      const orderMessage = `🛒 *নতুন অর্ডার - খান সুপার শপ* 🛒\n\n👤 *গ্রাহকের নাম:* ${customerName}\n📞 *মোবাইল নম্বর:* ${customerPhone}\n📍 *ঠিকানা:* ${customerAddress}\n\n📦 *পণ্যের তালিকা:*\n${productListMessage}\n💵 *সর্বমোট প্রদেয় বিল:* ${totalAmount} টাকা\n\n Khan Super Shop এ অর্ডার করার জন্য ধন্যবাদ।`;
-      
-      const whatsappNumber = "8801749672230"; 
-      const encodedMessage = encodeURIComponent(orderMessage);
-      const finalWhatsAppUrl = `https://wa.me{whatsappNumber}?text=${encodedMessage}`;
-      
-      window.open(finalWhatsAppUrl, '_blank');
-    }
-  </script>
-
-  <!-- কাস্টম কার্ট লজিক শেষ হওয়ার ঠিক নিচে সুপাবেস ফাইলটি যুক্ত হবে -->
-  <script src="supabase-bazar.js"></script>
-</div>
-
-</body>
-</html>
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image_url || 'https://placeholder.com'}" alt="${product.name}">
+                    <div class="product-title">${product.name}</div>
+                    <div class="product-price">${product.price} টাকা</div>
+                    <button class="add-to-cart-btn" onclick="addToCart(${product.id})">কার্টে যোগ করুন</button>
+                `;
