@@ -96,3 +96,48 @@ h2 {
     font-size: 18px;
     color: #666;
 }
+/* প্লাস মাইনাস বাটনের কন্টেইনার */
+.qty-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* কমন বাটন স্টাইল */
+.qty-btn {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/* মাইনাস বাটন হবে লাল */
+.minus-btn {
+    background-color: #dc3545;
+}
+.minus-btn:hover {
+    background-color: #bd2130;
+}
+
+/* প্লাস বাটন হবে সবুজ */
+.plus-btn {
+    background-color: #28a745;
+}
+.plus-btn:hover {
+    background-color: #218838;
+}
+
+/* মাঝখানের সংখ্যার স্টাইল */
+.qty-number {
+    font-size: 18px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
