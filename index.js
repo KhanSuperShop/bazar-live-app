@@ -3,7 +3,6 @@ const SUPABASE_URL = 'https://kuecacvhadqzywvkmauo.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI'; 
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // ২. লোকাল মেমোরি থেকে কার্ট ডাটা লোড করা
 let cart = JSON.parse(localStorage.getItem('khan_shop_cart')) || [];
 
@@ -28,21 +27,27 @@ async function loadProducts() {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
             
-            // নিচে ডাইনামিক বাটন (পরিমাণ ০ হলে "কার্টে যোগ করুন", বেশি হলে - Qty + দেখাবে)
+            // ডাটাবেজের সঠিক কলাম বা অবজেক্টের কী (Key) স্বয়ংক্রিয়ভাবে খুঁজে নেওয়ার ব্যবস্থা
+            const pName = product.name || product.title || product.p_name || "পণ্য";
+            const pDesc = product.description || product.desc || product.p_desc || "";
+            const pImg = product.image_url || product.image || product.img_url || 'https://placeholder.com';
+            const pPrice = product.price || product.p_price || 0;
+
             productCard.innerHTML = `
-                <img src="${product.image_url || 'https://placeholder.com'}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                <p class="description">${product.description || ''}</p>
-                <p class="price">৳${product.price}</p>
+                <img src="${pImg}" alt="${pName}">
+                <h3>${pName}</h3>
+                <p class="description">${pDesc}</p>
+                <p class="price">৳${pPrice}</p>
                 
+                <!-- বাটন কন্টেইনার -->
                 <div class="cart-control-container" id="control-${product.id}">
                     ${quantity === 0 ? `
-                        <button class="cart-btn" onclick="changeQuantity('${product.id}', '${product.name}', ${product.price}, 1)">কার্টে যোগ করুন</button>
+                        <button class="cart-btn" onclick="changeQuantity('${product.id}', '${pName}', ${pPrice}, 1)">কার্টে যোগ করুন</button>
                     ` : `
                         <div class="qty-picker">
-                            <button class="qty-btn minus-btn" onclick="changeQuantity('${product.id}', '${product.name}', ${product.price}, -1)">-</button>
+                            <button class="qty-btn minus-btn" onclick="changeQuantity('${product.id}', '${pName}', ${pPrice}, -1)">-</button>
                             <span class="qty-number">${quantity}</span>
-                            <button class="qty-btn plus-btn" onclick="changeQuantity('${product.id}', '${product.name}', ${product.price}, 1)">+</button>
+                            <button class="qty-btn plus-btn" onclick="changeQuantity('${product.id}', '${pName}', ${pPrice}, 1)">+</button>
                         </div>
                     `}
                 </div>
@@ -57,16 +62,14 @@ async function loadProducts() {
 
 // ৪. পণ্য কমাতে বা বাড়াতে এই মূল ফাংশনটি কাজ করবে
 function changeQuantity(productId, productName, productPrice, change) {
-    const cartItem = cart.find(item => item.id === productId);
+    let cartItem = cart.find(item => item.id === productId);
 
     if (cartItem) {
         cartItem.quantity += change;
-        // পরিমাণ ০ বা তার কম হয়ে গেলে কার্ট থেকে মুছে ফেলা হবে
         if (cartItem.quantity <= 0) {
             cart = cart.filter(item => item.id !== productId);
         }
     } else if (change > 0) {
-        // কার্টে না থাকলে নতুন করে ১টি যোগ হবে
         cart.push({
             id: productId,
             name: productName,
@@ -75,14 +78,14 @@ function changeQuantity(productId, productName, productPrice, change) {
         });
     }
 
-    // লোকাল স্টোরেজে আপডেট সেভ করা
+    // লোকাল স্টোরেজে সেভ করা
     localStorage.setItem('khan_shop_cart', JSON.stringify(cart));
     
-    // শুধু ওই নির্দিষ্ট প্রোডাক্ট কার্ডের বাটন ইন্টারফেসটি সাথে সাথে আপডেট করা
+    // ইন্টারফেস সাথে সাথে আপডেট করা
     updateButtonUI(productId, productName, productPrice);
 }
 
-// ৫. বাটনের লাল-সবুজ প্লাস-মাইনাস ডিজাইন আপডেট করার ফাংশন
+// ৫. বাটন পরিবর্তন করার ফাংশন (ক্লিক করলেই প্লাস-মাইনাস আসবে, ০ হলে আবার মূল বাটন আসবে)
 function updateButtonUI(productId, productName, productPrice) {
     const controlContainer = document.getElementById(`control-${productId}`);
     const cartItem = cart.find(item => item.id === productId);
@@ -103,5 +106,5 @@ function updateButtonUI(productId, productName, productPrice) {
     }
 }
 
-// পেজ লোড হলে প্রোডাক্ট দেখাবে
+// পেজ লোড হলে রান হবে
 window.onload = loadProducts;
