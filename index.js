@@ -183,27 +183,3 @@ document.getElementById('delivery-form').addEventListener('submit', async (e) =>
         alert(`অর্ডার পাঠানো যায়নি: ${error.message}`);
     }
 });
-// আগের কোনো কোড পরিবর্তন না করে একদম নিচে এটি পেস্ট করুন
-window.addEventListener('DOMContentLoaded', () => {
-    // ১. ব্যানারের জন্য HTML তৈরি করা
-    const banner = document.createElement('div');
-    banner.innerHTML = '📢 ধামাকা অফার! ৫০০ টাকার কেনাকাটা করলেই পাচ্ছেন ৫০ টাকা একদম ফ্রি! 🌟';
-    
-    // ২. ব্যানারের সুন্দর ডিজাইন (CSS) সেট করা
-    Object.assign(banner.style, {
-        backgroundColor: '#ff4d4d',
-        color: '#ffffff',
-        textAlign: 'center',
-        padding: '12px 5px',
-        fontSize: '16px',
-        fontWeight: 'bold',
-        position: 'relative',
-        width: '100%',
-        boxSizing: 'border-box',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-        zIndex: '99999'
-    });
-
-    // ৩. বডির একদম শুরুতে ব্যানারটি বসিয়ে দেওয়া
-    document.body.insertBefore(banner, document.body.firstChild);
-});
