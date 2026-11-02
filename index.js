@@ -183,3 +183,29 @@ document.getElementById('delivery-form').addEventListener('submit', async (e) =>
         alert(`অর্ডার পাঠানো যায়নি: ${error.message}`);
     }
 });
+// আগের কোডটি মুছে এই কোডটি index.js ফাইলের নিচে দিন
+const banner = document.createElement('div');
+banner.innerHTML = '📢 ধামাকা অফার! ৫০০ টাকার কেনাকাটা করলেই পাচ্ছেন ৫০ টাকা একদম ফ্রি! 🌟';
+
+// সরাসরি স্টাইল সেট করা (যাতে এটি একদম স্ক্রিনের মাথায় আটকে থাকে)
+Object.assign(banner.style, {
+    position: 'fixed',    // এটি ব্যানারটিকে স্ক্রিনের একদম উপরে ফিক্সড করে রাখবে
+    top: '0',             // একদম উপরে জিরো পজিশন
+    left: '0',
+    width: '100%',
+    backgroundColor: '#ff4d4d',
+    color: '#ffffff',
+    textAlign: 'center',
+    padding: '12px 5px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    boxSizing: 'border-box',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+    zIndex: '999999'      // অন্য সব এলিমেন্টের উপরে থাকার জন্য বড় সংখ্যা
+});
+
+// বডি ট্যাগের একদম শুরুতে এটি যুক্ত করা হচ্ছে
+document.body.appendChild(banner);
+
+// ব্যানারটির কারণে যাতে আপনার সাইটের আসল লেখা ঢেকে না যায়, তাই বডিকে একটু নিচে নামিয়ে দেওয়া
+document.body.style.paddingTop = '45px';
