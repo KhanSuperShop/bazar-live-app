@@ -96,48 +96,66 @@ h2 {
     font-size: 18px;
     color: #666;
 }
-/* প্লাস মাইনাস বাটনের কন্টেইনার */
-.qty-picker {
+/* পণ্য এবং কার্টকে পাশাপাশি নেওয়ার জন্য লেআউট */
+.main-layout {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
+    gap: 30px;
+    padding: 20px;
+    align-items: flex-start;
+}
+
+/* বাম পাশের পণ্যের অংশ */
+.products-container {
+    flex: 7;
+}
+
+/* ডান পাশের কার্ট ও ফর্মের ডিজাইন */
+.cart-container {
+    flex: 3;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.cart-container h2, .cart-container h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+/* ইনপুট ফিল্ড ও ফর্মের স্টাইল */
+.cart-container label {
+    display: block;
     margin-top: 10px;
-}
-
-/* কমন বাটন স্টাইল */
-.qty-btn {
-    width: 35px;
-    height: 35px;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
     font-weight: bold;
-    color: white;
-    cursor: pointer;
-    transition: background 0.2s;
+    font-size: 14px;
 }
 
-/* মাইনাস বাটন হবে লাল */
-.minus-btn {
-    background-color: #dc3545;
-}
-.minus-btn:hover {
-    background-color: #bd2130;
+.cart-container input, 
+.cart-container textarea {
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 
-/* প্লাস বাটন হবে সবুজ */
-.plus-btn {
+/* সাবমিট বাটনের স্টাইল */
+.submit-btn {
+    width: 100%;
     background-color: #28a745;
-}
-.plus-btn:hover {
-    background-color: #218838;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
 }
 
-/* মাঝখানের সংখ্যার স্টাইল */
-.qty-number {
-    font-size: 18px;
-    font-weight: bold;
-    min-width: 20px;
-    text-align: center;
+.submit-btn:hover {
+    background-color: #218838;
 }
