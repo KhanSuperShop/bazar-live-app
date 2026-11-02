@@ -3,41 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>খান সুপার সপ - হোম পেজ</title>
+    <title>খান সুপার শপ - হোম পেজ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
- <!-- সাইডবার নেভিগেশন -->
-    <div class="sidebar">
-        <h2> KHAN সুপার শপ 🛒</h2>
-        <a href="#" class="active">📦 পণ্য ম্যানেজমেন্ট</a>
-        <a href="#">📋 অর্ডার লিস্ট</a>
-        <a href="#">👥 কাস্টমারস</a>
-        <!-- এখানে index.html এর জায়গায় আপনার মেইন কাস্টমার পেজের সঠিক ফাইলের নাম দিন -->
-        <a href="index.html" style="margin-top: 50px; background-color: #c62828; text-align: center;">🏠 মেইন ওয়েবসাইটে যান</a>
-    </div>
+
     <!-- হেডার বা নেভিগেশন বার -->
     <header>
-        <div class="logo">খান সুপার সপ</div>
+        <div class="class="logo"">খান সুপার শপ</div>
     </header>
 
-    <!-- মূল প্রোডাক্ট সেকশন -->
     <main>
-        <h2>আমাদের পণ্যসমূহ</h2>
-        <div id="product-container" class="product-grid">
-            <p class="loading">পণ্য লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</p>
-        </div>
+        <!-- মেইন লেআউট বক্স শুরু (যা পণ্য এবং কার্টকে পাশাপাশি রাখবে) -->
+        <div class="main-layout">
+
+            <!-- বাম পাশের পণ্যের অংশ -->
+            <div class="products-container">
+                <h2>আমাদের পণ্যসমূহ</h2>
+                
+                <!-- সুপা-বেস থেকে প্রোডাক্ট লোড হওয়ার গ্রিড -->
+                <div id="product-container" class="product-grid">
+                    <p class="loading">পণ্য লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</p>
+                </div>
+            </div>
+
+            <!-- ডান পাশের কার্ট ও ডেলিভারি ফর্মের অংশ -->
+            <div class="cart-container">
+                <h2>বাজারের থলি (Cart)</h2>
+                <p id="cart-status">আপনার থলি খালি আছে। পণ্য যোগ করুন।</p>
+                
+                <div class="total-amount">
+                    <strong>সর্বমোট:</strong> <span id="total-price">০</span> টাকা
+                </div>
+
+                <h3>ডেলিভারি তথ্য</h3>
+                <form id="delivery-form">
+                    <label>আপনার নাম *</label>
+                    <input type="text" id="user-name" placeholder="যেমন: মো: রহিম" required>
+
+                    <label>মোবাইল নাম্বার *</label>
+                    <input type="text" id="user-phone" placeholder="যেমন: 017XXXXXXXX" required>
+
+                    <label>পূর্ণাঙ্গ ঠিকানা *</label>
+                    <textarea id="user-address" placeholder="গ্রাম/রোড, থানা, জেলা উল্লেখ করুন" required></textarea>
+                    
+                    <button type="submit" class="submit-btn">অর্ডার সম্পন্ন করুন</button>
+                </form>
+            </div>
+
+        </div> <!-- মেইন লেআউট বক্স শেষ -->
     </main>
 
-    <!-- সুপাবেস এর লোকাল জাভাস্ক্রিপ্ট লাইব্রেরি -->
+    <!-- আপনার জাভাস্ক্রিপ্ট ফাইলগুলোর লিঙ্ক (নিশ্চিত করুন এগুলো নিচে আছে) -->
     <script src="supabase.js"></script>
-    
-    <!-- আমাদের নিজস্ব জাভাস্ক্রিপ্ট ফাইল -->
-<script src="index.js"></script>
-<!-- Floating WhatsApp Button -->
-<a href="https://whatsapp.com" target="_blank" style="position: fixed; right: 20px; bottom: 30px; background-color: #25D366; color: white; padding: 12px 24px; border-radius: 30px; font-family: Arial; font-weight: bold; text-decoration: none; z-index: 99999;">
-   💬 যোগাযোগ করুন
-</a>
-<link rel="stylesheet" href="https://cloudflare.com">
- </body>
+    <script src="index.js"></script>
+</body>
 </html>
