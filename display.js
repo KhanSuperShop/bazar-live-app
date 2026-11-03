@@ -1,16 +1,11 @@
-// ১. সুপাবেস কানেকশন সেটআপ
-const SUPABASE_URL = 'https://kuecacvhadqzywvkmauo.supabase.co'; 
-const SUPABASE_ANON_KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI'; 
-
-// সুপাবেস ক্লায়েন্ট ইনিশিয়েট করা (ডুপ্লিকেট এরর মুক্ত করা হয়েছে)
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+// ১. সুপাবেস কানেকশন সেটআপ (আপনার প্রজেক্টের পুরোনো সুপাবেস অবজেক্ট ব্যবহার করা হচ্ছে)
 const ledBoard = document.getElementById('led-board');
 const errorMsg = document.getElementById('error-msg');
 
-// ২. সুপাবেস থেকে ডাটা নিয়ে এসে স্ক্রিনে দেখানোর মেইন ফাংশন
+// ২. ডাটা নিয়ে এসে স্ক্রিনে দেখানোর মেইন ফাংশন (পুরানো ভার্সন অনুযায়ী ফিক্সড)
 async function fetchProducts() {
     try {
+        // সুপাবেস v1 এ ওল্ড স্টাইলে অর্ডার করতে হয়
         const { data, error } = await supabase
             .from('products')
             .select('title, price')
@@ -21,7 +16,7 @@ async function fetchProducts() {
         // পুরানো লিস্ট ক্লিয়ার করা
         ledBoard.innerHTML = '';
 
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             ledBoard.innerHTML = '<div style="text-align:center;">কোনো পণ্য পাওয়া যায়নি</div>';
             return;
         }
@@ -43,24 +38,26 @@ async function fetchProducts() {
     }
 }
 
-// ৩. রিয়েল-টাইম লিসেনার (ডাটাবেজে দাম চেঞ্জ হলেই এই ফাংশন অটো রান হবে)
+// ৩. রিয়েল-টাইম লিসেনার (পুরানো ভার্সন v1 স্টাইলে ফিক্সড)
 function listenRealtime() {
     supabase
-        .channel('schema-db-changes')
-        .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'products' },
-            (payload) => {
-                console.log('Change received!', payload);
-                // ডাটাবেজে কোনো পরিবর্তন হলেই আবার নতুন করে ডাটা এনে ডিসপ্লে আপডেট করবে
-                fetchProducts();
-            }
-        )
+        .from('products')
+        .on('*', payload => {
+            console.log('Change received!', payload);
+            fetchProducts(); // ডাটা চেঞ্জ হলেই স্ক্রিন আপডেট হবে
+        })
         .subscribe();
 }
 
 // ৪. পেজ ওপেন হওয়ার সাথে সাথে ফাংশনগুলো রান করা
 document.addEventListener('DOMContentLoaded', () => {
-    fetchProducts();   // প্রথমবার ডাটা লোড করার জন্য
-    listenRealtime();  // রিয়েল-টাইম কানেকশন অন করার জন্য
+    // যদি মেইন পেজের supabase অবজেক্ট লোড হতে একটু সময় নেয়, তাই ছোট ১ সেকেন্ডের ডিলে
+    setTimeout(() => {
+        if (typeof supabase !== 'undefined') {
+            fetchProducts();
+            listenRealtime();
+        } else {
+            errorMsg.innerText = "সুপাবেস কানেকশন খুঁজে পাওয়া যাচ্ছে না!";
+        }
+    }, 1000);
 });
