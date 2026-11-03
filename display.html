@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Price Display Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #050505;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace, sans-serif;
+            overflow: hidden;
+            padding: 20px;
+        }
+        /* বোর্ডের হেডার বা শিরোনাম */
+        .board-header {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #ff3300;
+            text-shadow: 0 0 10px #ff3300, 0 0 20px #ff3300;
+            margin-bottom: 30px;
+            border-bottom: 3px dashed #ff3300;
+            padding-bottom: 10px;
+        }
+        /* প্রোডাক্ট তালিকার কন্টেইনার */
+        .price-board {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        /* প্রতিটি প্রোডাক্টের রো (Row) */
+        .product-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid #113311;
+            padding: 10px 20px;
+            background: rgba(0, 255, 102, 0.02);
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .product-name {
+            color: #00ff66;
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.8);
+            text-transform: capitalize;
+        }
+        .product-price {
+            color: #ffff00;
+            text-shadow: 0 0 8px rgba(255, 255, 0, 0.8);
+        }
+        #error-msg {
+            color: red;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="board-header">DAILY MARKET PRICE - মূল্য তালিকা</div>
+    
+    <div id="error-msg"></div>
+    
+    <div class="price-board" id="led-board">
+        <div style="text-align: center; font-size: 2rem;">ডিজিটাল বোর্ড কানেক্ট হচ্ছে...</div>
+    </div>
+
+    <!-- সুপাবেস লাইব্রেরিটি বডির ঠিক নিচে যুক্ত করা হলো (যাতে লোকাল ফাইলে কাজ করে) -->
+    <script src="https://unpkg.com"></script>
+    <script src="display.js"></script>
+</body>
+</html>
