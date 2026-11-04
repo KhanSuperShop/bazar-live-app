@@ -1,4 +1,123 @@
 <!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Price Display Board</title>
+    <!-- সুপাবেস লাইব্রেরি CDN -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .board-header {
+            color: #ff4500;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        #error-msg {
+            color: red;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+        #led-board {
+            text-align: center;
+            font-size: 2rem;
+            color: #00ff00;
+            margin-top: 50px;
+        }
+        /* আপনার মূল্য তালিকার টেবিল বা গ্রিড স্টাইল নিচে দিতে পারেন */
+        .price-table {
+            width: 80%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            font-size: 1.8rem;
+        }
+        .price-table th, .price-table td {
+            border: 1px solid #444;
+            padding: 12px;
+            text-align: left;
+        }
+        .price-table th {
+            background-color: #222;
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="board-header">DAILY MARKET PRICE - মূল্য তালিকা</div>
+    <div id="error-msg"></div>
+    
+    <div id="led-board">
+        <div style="text-align: center;">ডিজিটাল বোর্ড কানেক্ট হচ্ছে...</div>
+    </div>
+
+    <script>
+        // আপনার Supabase এর সঠিক URL এবং ANON KEY এখানে বসাবেন (supabase.js ফাইল থেকে দেখে নিন)
+        const SUPABASE_URL = "https://kuecacvhadqzywvkmauo.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI";
+
+        // সুপাবেস ক্লায়েন্ট তৈরি (CDN ভার্সনের জন্য lowercase 'supabase')
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ১. ডেটাবেজ থেকে পণ্যের তালিকা নিয়ে আসার ফাংশন
+        async function fetchProducts() {
+            try {
+                const { data, error } = await _supabase
+                    .from('products') // আপনার টেবিল নাম 'products' হলে
+                    .select('*');
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    let html = '<table class="price-table"><tr><th>পণ্যের নাম</th><th>মূল্য</th></tr>';
+                    data.forEach(item => {
+                        html += `<tr><td>${item.name || item.title}</td><td>${item.price} টাকা</td></tr>`;
+                    });
+                    html += '</table>';
+                    document.getElementById('led-board').innerHTML = html;
+                } else {
+                    document.getElementById('led-board').innerHTML = "কোনো পণ্য খুঁজে পাওয়া যায়নি।";
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('error-msg').innerText = "ডেটা লোড করতে সমস্যা হচ্ছে: " + err.message;
+            }
+        }
+
+        // ২. রিয়েল-টাইম লিসেনার (Supabase v2 স্টাইল)
+        function listenRealtime() {
+            _supabase
+                .channel('schema-db-changes')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'products' },
+                    (payload) => {
+                        console.log('Change received!', payload);
+                        fetchProducts(); // ডাটা চেঞ্জ হলেই স্ক্রিন আপডেট হবে
+                    }
+                )
+                .subscribe();
+        }
+
+        // পেজ লোড হলে রান হবে
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchProducts();
+            listenRealtime();
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
