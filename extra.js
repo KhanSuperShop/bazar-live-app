@@ -202,15 +202,18 @@
       }
     }, 1500);
 
-    // নিচে লোকেশন ফুটার
+      // নিচে লোকেশন ফুটার
     if (settings.shop_address) {
       const footer = document.createElement("div");
       footer.style.cssText =
         "background:#2c3e50; color:#fff; padding:20px; margin-top:30px; text-align:center; font-family:sans-serif;";
-      footer.innerHTML = `
-        <h3 style="margin:0 0 6px 0;">📍 খান সুপার শপ - আমাদের ঠিকানা</h3>
-        <p style="margin:0 0 6px 0; font-size:14px;">${settings.shop_address}</p>
-
+      footer.innerHTML =
+        '<h3 style="margin:0 0 6px 0;">📍 খান সুপার শপ - আমাদের ঠিকানা</h3>' +
+        '<p style="margin:0 0 6px 0; font-size:14px;">' + settings.shop_address + '</p>' +
+        '<p style="margin:0 0 12px 0; font-size:14px;">📞 হটলাইন: ' + (settings.shop_phone || "") + '</p>' +
+        (settings.map_link ? '<a href="' + settings.map_link + '" target="_blank" style="background:#2ed573; color:#fff; padding:8px 15px; text-decoration:none; border-radius:5px; font-weight:bold; font-size:13px;">গুগল ম্যাপে দেখুন</a>' : '');
+      document.body.appendChild(footer);
+    }
 📞 হটলাইন: ${settings.shop_phone || ""}
 ${settings.map_link ? <a href="${settings.map_link}" target="_blank" style="background:#2ed573; color:#fff; padding:8px 15px; text-decoration:none; border-radius:5px; font-weight:bold; font-size:13px;">গুগল ম্যাপে দেখুন</a> : ""}
 `;
