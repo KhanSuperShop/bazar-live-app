@@ -4,7 +4,6 @@
   // ==============================================================
   const SUPABASE_URL = "https://kuecacvhadqzywvkmauo.supabase.co";
   const SUPABASE_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI"; // <-- এখানে আপনার কপি করা anon public key বসান
-
   const API_ENDPOINT = `${SUPABASE_URL}/rest/v1/shop_settings?id=eq.1`;
   const HEADERS = {
     apikey: SUPABASE_KEY,
@@ -157,7 +156,6 @@
             this.src = defaultImgSVG;
             this.style.objectFit = "cover";
           };
-          // যদি ছবি ইতিমধ্যে লোড হতে ব্যর্থ হয়ে থাকে
           if (
             !img.getAttribute("src") ||
             (img.complete && img.naturalWidth === 0)
@@ -170,7 +168,6 @@
       });
     }
 
-    // পেজ লোড হওয়ার পর ও পণ্য আসার পর ছবি ও কার্ট তথ্য আপডেট করা
     setTimeout(() => {
       fixBrokenImages();
 
@@ -193,7 +190,6 @@
         });
       }
 
-      // কার্টে ডেলিভারি চার্জ দেখানো
       const cartHeading = Array.from(document.querySelectorAll("h2, h3")).find(
         (el) => el.innerText && el.innerText.includes("বাজারের থলি")
       );
@@ -212,3 +208,23 @@
       footer.style.cssText =
         "background:#2c3e50; color:#fff; padding:20px; margin-top:30px; text-align:center; font-family:sans-serif;";
       footer.innerHTML = `
+        <h3 style="margin:0 0 6px 0;">📍 খান সুপার শপ - আমাদের ঠিকানা</h3>
+        <p style="margin:0 0 6px 0; font-size:14px;">${settings.shop_address}</p>
+
+📞 হটলাইন: ${settings.shop_phone || ""}
+${settings.map_link ? <a href="${settings.map_link}" target="_blank" style="background:#2ed573; color:#fff; padding:8px 15px; text-decoration:none; border-radius:5px; font-weight:bold; font-size:13px;">গুগল ম্যাপে দেখুন</a> : ""}
+`;
+document.body.appendChild(footer);
+}
+// ভাসমান WhatsApp বাটন
+if (settings.whatsapp_number) {
+const wa = document.createElement("a");
+wa.href = https://wa.me{settings.whatsapp_number}?text=${encodeURIComponent("আসসালামু আলাইকুম, আমি বাজারের লিস্ট পাঠাতে চাই:")};
+wa.target = "_blank";
+wa.innerText = "📝 বাজারের লিস্ট (WhatsApp)";
+wa.style.cssText =
+"position:fixed; bottom:18px; right:18px; background:#25D366; color:#fff; padding:11px 16px; border-radius:30px; text-decoration:none; font-weight:bold; z-index:9999; font-size:13px; box-shadow:0 4px 10px rgba(0,0,0,0.3);";
+document.body.appendChild(wa);
+}
+});
+})();
