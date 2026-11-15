@@ -1,6 +1,6 @@
 (function () {
   // ==============================================================
-  // আপনার Supabase প্রোজেক্ট URL (বসানো আছে) এবং Anon Key বসান
+   // আপনার Supabase প্রোজেক্ট URL (বসানো আছে) এবং Anon Key বসান
   // ==============================================================
   const SUPABASE_URL = "https://kuecacvhadqzywvkmauo.supabase.co";
   const SUPABASE_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI"; // <-- এখানে আপনার কপি করা anon public key বসান
@@ -18,8 +18,7 @@
 
     let settings = {};
     try {
-      // ক্যাশ এড়াতে প্রতিবার নতুন ডাটা আনবে
-      const res = await fetch(API_ENDPOINT + "&t=" + new Date().getTime(), { headers: HEADERS });
+      const res = await fetch(API_ENDPOINT, { headers: HEADERS, cache: "no-store" });
       const data = await res.json();
       if (data && data.length > 0) settings = data;
     } catch (err) {
@@ -103,7 +102,6 @@
         }
       });
 
-      // যদি পুরনো ব্যানার খুঁজে না পায়, তবে ওপরে নতুন ব্যানার বসাবে
       if (!replaced) {
         const banner = document.createElement("div");
         banner.style.cssText = "background:#e74c3c; color:#fff; text-align:center; padding:10px; font-weight:bold; font-size:14px; position:sticky; top:0; z-index:9999;";
@@ -131,7 +129,6 @@
         });
       }
 
-      // শুধুমাত্র একবার "বাজারের থলি" হেডিংয়ের নিচে ডেলিভারি চার্জ দেখানো
       const cartHeading = Array.from(document.querySelectorAll("h2, h3")).find(
         (el) => el.innerText && el.innerText.includes("বাজারের থলি")
       );
