@@ -1,10 +1,9 @@
 (function () {
   // ==============================================================
-   // আপনার Supabase প্রোজেক্ট URL (বসানো আছে) এবং Anon Key বসান
+    // আপনার Supabase প্রোজেক্ট URL (বসানো আছে) এবং Anon Key বসান
   // ==============================================================
   const SUPABASE_URL = "https://kuecacvhadqzywvkmauo.supabase.co";
   const SUPABASE_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI"; // <-- এখানে আপনার কপি করা anon public key বসান
-
   const API_ENDPOINT = `${SUPABASE_URL}/rest/v1/shop_settings?id=eq.1`;
   const HEADERS = {
     apikey: SUPABASE_KEY,
@@ -186,7 +185,7 @@
       document.body.appendChild(footer);
     }
 
-         // ভাসমান WhatsApp বাটন
+    // ভাসমান WhatsApp বাটন
     if (settings.whatsapp_number) {
       const wa = document.createElement("a");
       wa.href = `https://wa.me{settings.whatsapp_number}?text=${encodeURIComponent("আসসালামু আলাইকুম, আমি বাজারের লিস্ট পাঠাতে চাই:")}`;
