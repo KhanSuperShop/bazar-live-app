@@ -186,15 +186,13 @@
       document.body.appendChild(footer);
     }
 
-    // ভাসমান WhatsApp বাটন
+        // ভাসমান WhatsApp বাটন
     if (settings.whatsapp_number) {
       const wa = document.createElement("a");
-      wa.href = `https://wa.me{settings.whatsapp_number}?text=${encodeURIComponent("আসসালামু আলাইকুম, আমি বাজারের লিস্ট পাঠাতে চাই:")}`;
+      wa.href = "https://wa.me" + settings.whatsapp_number.trim() + "?text=" + encodeURIComponent("আসসালামু আলাইকুম, আমি বাজারের লিস্ট পাঠাতে চাই:");
       wa.target = "_blank";
       wa.innerText = "📝 বাজারের লিস্ট (WhatsApp)";
       wa.style.cssText =
         "position:fixed; bottom:18px; right:18px; background:#25D366; color:#fff; padding:11px 16px; border-radius:30px; text-decoration:none; font-weight:bold; z-index:9999; font-size:13px; box-shadow:0 4px 10px rgba(0,0,0,0.3);";
       document.body.appendChild(wa);
     }
-  });
-})();
