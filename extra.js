@@ -20,7 +20,7 @@
     try {
       const res = await fetch(API_ENDPOINT, { headers: HEADERS });
       const data = await res.json();
-      if (data && data.length > 0) settings = data[0];
+      if (data && data.length > 0) settings = data;
     } catch (err) {
       console.error("Supabase থেকে ডাটা লোড হয়নি:", err);
     }
@@ -92,14 +92,21 @@
       return;
     }
 
-    // কাস্টমার পেজে ডাটাবেজের তথ্য দেখানো
+    // কাস্টমার পেজ: পুরনো স্ট্যাটিক অফার ব্যানার হাইড করে নতুন ডায়নামিক ব্যানার বসানো
     if (settings.offer_text) {
+      document.querySelectorAll("div, p, marquee").forEach((el) => {
+        if (el.innerText && el.innerText.includes("ধামাকা অফার") && el.children.length === 0) {
+          el.style.display = "none";
+        }
+      });
+
       const banner = document.createElement("div");
       banner.style.cssText = "background:#e74c3c; color:#fff; text-align:center; padding:10px; font-weight:bold; font-size:14px; position:sticky; top:0; z-index:9999;";
       banner.innerText = settings.offer_text;
       document.body.prepend(banner);
     }
 
+    // সার্চ বক্স
     const searchBox = document.createElement("div");
     searchBox.style.cssText = "text-align:center; margin:15px auto; padding:0 10px;";
     searchBox.innerHTML = `<input type="text" id="grocerySearch" placeholder="🔍 মুদি পণ্য খুঁজুন (যেমন: oil, lux, potol)..." style="width:90%; max-width:450px; padding:10px 15px; border:2px solid #27ae60; border-radius:25px; outline:none;">`;
@@ -118,16 +125,19 @@
         });
       }
 
-      document.querySelectorAll("div, h2, h3").forEach((el) => {
-        if (el.innerText && el.innerText.includes("বাজারের থলি")) {
-          const info = document.createElement("div");
-          info.style.cssText = "background:#eafaf1; border:1px dashed #27ae60; padding:8px; margin:8px 0; border-radius:5px; font-size:13px; color:#1e8449;";
-          info.innerHTML = `🚚 ডেলিভারি চার্জ: <b>৳${settings.delivery_charge || 30}</b> (<b>৳${settings.free_delivery_min || 500}+</b> অর্ডারে ফ্রি)`;
-          el.parentNode.insertBefore(info, el.nextSibling);
-        }
-      });
+      // শুধুমাত্র একবার "বাজারের থলি" হেডিংয়ের নিচে ডেলিভারি চার্জ দেখানো
+      const cartHeading = Array.from(document.querySelectorAll("h2, h3")).find(
+        (el) => el.innerText && el.innerText.includes("বাজারের থলি")
+      );
+      if (cartHeading) {
+        const info = document.createElement("div");
+        info.style.cssText = "background:#eafaf1; border:1px dashed #27ae60; padding:8px; margin:8px 0; border-radius:5px; font-size:13px; color:#1e8449;";
+        info.innerHTML = `🚚 ডেলিভারি চার্জ: <b>৳${settings.delivery_charge || 30}</b> (<b>৳${settings.free_delivery_min || 500}+</b> অর্ডারে ফ্রি)`;
+        cartHeading.parentNode.insertBefore(info, cartHeading.nextSibling);
+      }
     }, 1500);
 
+    // নিচে লোকেশন ফুটার
     if (settings.shop_address) {
       const footer = document.createElement("div");
       footer.style.cssText = "background:#2c3e50; color:#fff; padding:20px; margin-top:30px; text-align:center; font-family:sans-serif;";
@@ -140,6 +150,7 @@
       document.body.appendChild(footer);
     }
 
+    // ভাসমান WhatsApp বাটন
     if (settings.whatsapp_number) {
       const wa = document.createElement("a");
       wa.href = `https://wa.me{settings.whatsapp_number}?text=${encodeURIComponent("আসসালামু আলাইকুম, আমি বাজারের লিস্ট পাঠাতে চাই:")}`;
