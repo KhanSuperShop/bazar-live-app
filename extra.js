@@ -18,7 +18,8 @@
 
     let settings = {};
     try {
-      const res = await fetch(API_ENDPOINT, { headers: HEADERS });
+      // ক্যাশ এড়াতে প্রতিবার নতুন ডাটা আনবে
+      const res = await fetch(API_ENDPOINT + "&t=" + new Date().getTime(), { headers: HEADERS });
       const data = await res.json();
       if (data && data.length > 0) settings = data;
     } catch (err) {
@@ -92,18 +93,23 @@
       return;
     }
 
-    // কাস্টমার পেজ: পুরনো স্ট্যাটিক অফার ব্যানার হাইড করে নতুন ডায়নামিক ব্যানার বসানো
+    // কাস্টমার পেজ: পুরনো স্ট্যাটিক লাল ব্যানারটির লেখা সরাসরি বদলে দেওয়া
     if (settings.offer_text) {
-      document.querySelectorAll("div, p, marquee").forEach((el) => {
+      let replaced = false;
+      document.querySelectorAll("div, p, span, marquee").forEach((el) => {
         if (el.innerText && el.innerText.includes("ধামাকা অফার") && el.children.length === 0) {
-          el.style.display = "none";
+          el.innerText = settings.offer_text;
+          replaced = true;
         }
       });
 
-      const banner = document.createElement("div");
-      banner.style.cssText = "background:#e74c3c; color:#fff; text-align:center; padding:10px; font-weight:bold; font-size:14px; position:sticky; top:0; z-index:9999;";
-      banner.innerText = settings.offer_text;
-      document.body.prepend(banner);
+      // যদি পুরনো ব্যানার খুঁজে না পায়, তবে ওপরে নতুন ব্যানার বসাবে
+      if (!replaced) {
+        const banner = document.createElement("div");
+        banner.style.cssText = "background:#e74c3c; color:#fff; text-align:center; padding:10px; font-weight:bold; font-size:14px; position:sticky; top:0; z-index:9999;";
+        banner.innerText = settings.offer_text;
+        document.body.prepend(banner);
+      }
     }
 
     // সার্চ বক্স
