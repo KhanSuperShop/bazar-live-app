@@ -363,3 +363,73 @@
 
     // নিচের setInterval-এর ভেতরে setupProductQuickView() চালু রাখা
     setInterval(setupProductQuickView, 1000);
+    // --- আপডেট ৪, ৫ ও ৬: লাইভ স্ট্যাটাস, ডার্ক মোড ও Back-to-Top বাটন ---
+    function setupExtraEnhancements() {
+        const header = document.querySelector('header');
+        if (!header) return;
+
+        // ১. দোকানের খোলা/বন্ধ লাইভ স্ট্যাটাস (বাংলাদেশ সময় অনুযায়ী সকাল ৮টা - রাত ১০টা)
+        if (!document.getElementById('shop-live-status')) {
+            const bdTime = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+            const hour = bdTime.getHours();
+            const isOpen = hour >= 8 && hour < 22;
+
+            const statusBadge = document.createElement('div');
+            statusBadge.id = 'shop-live-status';
+            statusBadge.style.cssText = 'display: inline-block; margin-top: 8px; margin-left: 8px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: rgba(0,0,0,0.25); color: #fff;';
+            statusBadge.innerHTML = isOpen 
+                ? '🟢 দোকান এখন খোলা (দ্রুত ডেলিভারি চলছে)' 
+                : '🔴 এখন বন্ধ (সকাল ৮টায় ডেলিভারি শুরু)';
+            header.appendChild(statusBadge);
+        }
+
+        // ২. ডার্ক মোড বাটন (🌙)
+        if (!document.getElementById('dark-mode-toggle')) {
+            const darkStyle = document.createElement('style');
+            darkStyle.innerHTML = `
+                body.dark-theme { background-color: #121212 !important; color: #e5e7eb !important; }
+                body.dark-theme .orders-container, body.dark-theme #cart-section, body.dark-theme aside,
+                body.dark-theme #product-list > div, body.dark-theme .product-grid > div, body.dark-theme .products-grid > div {
+                    background-color: #1e1e1e !important; color: #f3f4f6 !important; border-color: #333 !important;
+                }
+                body.dark-theme h2, body.dark-theme h3, body.dark-theme label { color: #f9fafb !important; }
+                body.dark-theme input, body.dark-theme textarea { background-color: #2a2a2a !important; color: #fff !important; border-color: #444 !important; }
+                body.dark-theme #delivery-charge-info { background-color: #143322 !important; color: #86efac !important; }
+            `;
+            document.head.appendChild(darkStyle);
+
+            const darkBtn = document.createElement('button');
+            darkBtn.type = 'button';
+            darkBtn.id = 'dark-mode-toggle';
+            darkBtn.innerHTML = '🌙 ডার্ক মোড';
+            darkBtn.style.cssText = 'margin-top: 8px; margin-left: 8px; background: #1f2937; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer;';
+
+            darkBtn.onclick = function() {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                darkBtn.innerHTML = isDark ? '☀️ লাইট মোড' : '🌙 ডার্ক মোড';
+                darkBtn.style.background = isDark ? '#f59e0b' : '#1f2937';
+                darkBtn.style.color = isDark ? '#000' : '#fff';
+            };
+            header.appendChild(darkBtn);
+        }
+
+        // ৩. উপরে ওঠার বাটন (⬆️ Back to Top)
+        if (!document.getElementById('back-to-top-btn')) {
+            const topBtn = document.createElement('button');
+            topBtn.type = 'button';
+            topBtn.id = 'back-to-top-btn';
+            topBtn.innerHTML = '⬆️';
+            topBtn.title = 'উপরে যান';
+            topBtn.style.cssText = 'display: none; position: fixed; bottom: 25px; right: 25px; width: 45px; height: 45px; border-radius: 50%; background: #16a34a; color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999;';
+
+            topBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.body.appendChild(topBtn);
+
+            window.addEventListener('scroll', () => {
+                topBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+            });
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', setupExtraEnhancements);
