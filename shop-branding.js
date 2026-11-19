@@ -203,3 +203,36 @@
         applyDiscountBadges();
         setInterval(applyDiscountBadges, 1000);
     });
+    // --- এক লাইনে ৪টি করে পণ্য দেখানোর গ্রিড স্টাইল ---
+    const gridStyle = document.createElement('style');
+    gridStyle.innerHTML = `
+        @media (min-width: 900px) {
+            #product-list, .product-grid, .products-grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 12px !important;
+            }
+            #product-list > div, .product-grid > div, .products-grid > div {
+                padding: 10px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            #product-list img, .product-grid img, .products-grid img {
+                height: 110px !important;
+                object-fit: cover !important;
+            }
+            #product-list h3, .product-grid h3, .products-grid h3 {
+                font-size: 14px !important;
+                margin: 6px 0 4px 0 !important;
+            }
+            #product-list p, .product-grid p, .products-grid p {
+                font-size: 12px !important;
+                margin: 0 0 6px 0 !important;
+            }
+            #product-list button, .product-grid button, .products-grid button {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+            }
+        }
+    `;
+    document.head.appendChild(gridStyle);
