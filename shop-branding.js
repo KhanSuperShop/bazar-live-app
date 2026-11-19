@@ -106,13 +106,14 @@
         } catch (e) {}
     }
 
-    function applyProductBadges() {
+        function applyProductBadges() {
         document.querySelectorAll('button').forEach(btn => {
             if (btn.innerText.includes('কার্টে যোগ করুন') || btn.innerText.includes('স্টক শেষ')) {
                 const card = btn.parentElement;
                 if (!card) return;
                 const cardText = card.innerText.toLowerCase();
 
+                // স্টক আউট চেক
                 if (outOfStockTitles.some(title => cardText.includes(title))) {
                     btn.disabled = true;
                     btn.innerText = '❌ স্টক শেষ';
@@ -120,13 +121,30 @@
                     btn.style.cursor = 'not-allowed';
                 }
 
+                // ডিসকাউন্ট (%) ব্যাজ ও পুরোনো দাম কেটে নতুন দাম দেখানো
                 if (!card.dataset.discountApplied) {
                     for (const [title, info] of Object.entries(discountProductsMap)) {
                         if (cardText.includes(title)) {
+                            const oldP = Number(info.old_price);
+                            const newP = Number(info.price);
+                            const percentOff = Math.round(((oldP - newP) / oldP) * 100);
+
+                            // ১. ছবির ওপর লাল রঙের শতকরা ছাড় (%) ব্যাজ বসানো
+                            card.style.position = 'relative';
+                            if (percentOff > 0 && !card.querySelector('.offer-percent-badge')) {
+                                const badge = document.createElement('div');
+                                badge.className = 'offer-percent-badge';
+                                badge.innerText = `🔥 ${percentOff}% ছাড়`;
+                                badge.style.cssText = 'position: absolute; top: 8px; left: 8px; background: #dc2626; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); z-index: 5;';
+                                card.appendChild(badge);
+                            }
+
+                            // ২. পুরোনো দাম কেটে পাশে নতুন দাম দেখানো
                             card.innerHTML = card.innerHTML.replace(
                                 `৳${info.price}`,
-                                `<del style="color:#888; font-size:13px; margin-right:5px;">৳${info.old_price}</del><span style="color:#dc2626; font-weight:bold;">৳${info.price}</span>`
+                                `<del style="color:#888; font-size:13px; margin-right:6px;">৳${oldP}</del><span style="color:#dc2626; font-weight:bold; font-size:16px;">৳${newP}</span>`
                             );
+
                             card.dataset.discountApplied = 'true';
                             break;
                         }
@@ -135,7 +153,6 @@
             }
         });
     }
-
     // ৪. এক লাইনে ৪টি পণ্য দেখানোর গ্রিড স্টাইল
     const gridStyle = document.createElement('style');
     gridStyle.innerHTML = `
