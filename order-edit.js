@@ -1,8 +1,8 @@
 (function () {
-    // ১. এডিট পপ-আপের জন্য প্রয়োজনীয় HTML ও CSS পেজে যুক্ত করা
+    // ১. এডিট পপ-আপের জন্য প্রয়োজনীয় HTML যুক্ত করা
     const modalHTML = `
-        <div id="custom-order-edit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; font-family:sans-serif;">
-            <div style="background:#fff; width:92%; max-width:420px; border-radius:10px; padding:20px; box-shadow:0 5px 20px rgba(0,0,0,0.3); max-height:85vh; overflow-y:auto;">
+        <div id="custom-order-edit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999999; justify-content:center; align-items:center; font-family:sans-serif;">
+            <div style="background:#fff; width:92%; max-width:420px; border-radius:10px; padding:20px; box-shadow:0 5px 20px rgba(0,0,0,0.3); max-height:85vh; overflow-y:auto; color:#333;">
                 <h3 style="margin-top:0; color:#2e7d32; border-bottom:1px solid #eee; padding-bottom:10px;">✏️ অর্ডার #<span id="edit-order-id"></span> এডিট করুন</h3>
                 
                 <div id="edit-items-list" style="margin-bottom:15px;"></div>
@@ -29,16 +29,14 @@
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // Supabase ক্লায়েন্ট খুঁজে বের করা (আপনার supabase.js বা index.js থেকে)
+    // ২. Supabase ক্লায়েন্ট খুঁজে বের করা
     function getSupabaseClient() {
-        if (window.supabaseClient) return window.supabaseClient;
-        if (window._supabase) return window._supabase;
-        if (window.db) return window.db;
-        // গ্লোবাল ভেরিয়েবল থেকে চেক করা
         for (let key in window) {
-            if (window[key] && typeof window[key].from === 'function' && typeof window[key].rpc === 'function') {
-                return window[key];
-            }
+            try {
+                if (window[key] && typeof window[key].from === 'function' && typeof window[key].rpc === 'function') {
+                    return window[key];
+                }
+            } catch (e) {}
         }
         return null;
     }
@@ -46,41 +44,40 @@
     let currentOrder = null;
     let currentItems = [];
 
-    // ২. অর্ডার পপ-আপ ওপেন হলে অটোমেটিক 'এডিট' বাটন যুক্ত করা
-    const observer = new MutationObserver(() => {
-        // স্ক্রিনশট অনুযায়ী "অর্ডার #59" লেখা এলিমেন্টগুলো খোঁজা
-        const allElements = document.querySelectorAll('div, p, h4, h5, span, strong');
+    // ৩. প্রতি ৫০০ মিলিসেকেন্ড পরপর চেক করে বাটন বসিয়ে দেওয়া
+    setInterval(() => {
+        const allElements = document.querySelectorAll('div, p, h4, h5, span, strong, b');
         allElements.forEach(el => {
             if (el.children.length === 0 && /অর্ডার\s*#\d+/.test(el.textContent)) {
-                const card = el.parentElement;
+                // অর্ডার কার্ডটি খুঁজে বের করা
+                let card = el.closest('div[style*="border"]') || el.parentElement.parentElement || el.parentElement;
                 if (!card || card.dataset.editInjected) return;
 
-                // যদি অর্ডারটি 'সম্পন্ন' বা 'Confirmed' না হয় তবেই এডিট বাটন দেখাবে
-                const cardText = card.innerText;
-                if (!cardText.includes('সম্পন্ন') && !cardText.includes('Confirmed')) {
-                    const match = el.textContent.match(/#(\d+)/);
-                    if (match) {
-                        const orderId = match[1];
-                        card.dataset.editInjected = "true";
+                const match = el.textContent.match(/#(\d+)/);
+                if (match && match) {
+                    const orderId = match;
+                    card.dataset.editInjected = "true";
 
-                        const editBtn = document.createElement('button');
-                        editBtn.innerHTML = '✏️ এডিট করুন';
-                        editBtn.style.cssText = 'background:#ff9800; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; margin-top:6px; display:inline-block;';
-                        
-                        editBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            openEditModal(orderId);
-                        };
-                        card.appendChild(editBtn);
-                    }
+                    // শুধুমাত্র pending অর্ডারে রাখতে চাইলে নিচের if লাইনটি আনকমেন্ট করতে পারেন
+                    // if (card.innerText.includes('সম্পন্ন')) return;
+
+                    const editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.innerHTML = '✏️ অর্ডার এডিট করুন';
+                    editBtn.style.cssText = 'background:#ff9800; color:#fff; border:none; padding:6px 12px; border-radius:5px; font-size:12px; font-weight:bold; cursor:pointer; margin-top:8px; display:block; width:100%;';
+                    
+                    editBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openEditModal(orderId);
+                    };
+                    card.appendChild(editBtn);
                 }
             }
         });
-    });
+    }, 500);
 
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // ৩. Supabase থেকে অর্ডারের তথ্য এনে এডিট মোডাল ওপেন করা
+    // ৪. Supabase থেকে অর্ডারের তথ্য এনে এডিট মোডাল ওপেন করা
     async function openEditModal(orderId) {
         const sb = getSupabaseClient();
         if (!sb) {
@@ -99,8 +96,9 @@
             return;
         }
 
+        // যদি অর্ডারটি সম্পন্ন হয়ে যায় তবে সতর্কবার্তা দেখাবে
         if (data.status !== 'pending') {
-            alert('দুঃখিত, এই অর্ডারটি ইতিমধ্যে কনফার্ম বা সম্পন্ন হয়ে গেছে, তাই আর এডিট করা যাবে না।');
+            alert('দুঃখিত, এই অর্ডারটি ইতিমধ্যে "' + data.status + '" হয়ে গেছে, তাই আর এডিট করা যাবে না। শুধুমাত্র পেন্ডিং অর্ডার এডিট করা যায়।');
             return;
         }
 
@@ -114,7 +112,7 @@
         document.getElementById('custom-order-edit-modal').style.display = 'flex';
     }
 
-    // ৪. পণ্যের তালিকা ও পরিমাণ (+/-) রেন্ডার করা
+    // ৫. পণ্যের তালিকা ও পরিমাণ (+/-) রেন্ডার করা
     function renderEditItems() {
         const listDiv = document.getElementById('edit-items-list');
         listDiv.innerHTML = '';
@@ -132,16 +130,15 @@
                     <div style="color:#666;">৳${item.price} x ${item.quantity} = ৳${itemTotal}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px;">
-                    <button type="button" onclick="window._updateEditQty(${index}, -1)" style="width:26px; height:26px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold;">-</button>
+                    <button type="button" onclick="window._updateEditQty(${index}, -1)" style="width:28px; height:28px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold;">-</button>
                     <span style="min-width:20px; text-align:center; font-weight:bold;">${item.quantity}</span>
-                    <button type="button" onclick="window._updateEditQty(${index}, 1)" style="width:26px; height:26px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold;">+</button>
-                    <button type="button" onclick="window._removeEditItem(${index})" style="background:#ffebee; color:#d32f2f; border:none; padding:4px 7px; border-radius:4px; cursor:pointer; margin-left:4px;">🗑️</button>
+                    <button type="button" onclick="window._updateEditQty(${index}, 1)" style="width:28px; height:28px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold;">+</button>
+                    <button type="button" onclick="window._removeEditItem(${index})" style="background:#ffebee; color:#d32f2f; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; margin-left:4px;">🗑️</button>
                 </div>
             `;
             listDiv.appendChild(row);
         });
 
-        // আপনার সাইটের নিয়ম অনুযায়ী ১০০০+ টাকায় ডেলিভারি ফ্রি, নাহলে ৩০ টাকা
         const deliveryCharge = subtotal > 0 ? (subtotal >= 1000 ? 0 : 30) : 0;
         const grandTotal = subtotal + deliveryCharge;
         document.getElementById('edit-order-total').innerText = grandTotal;
@@ -165,7 +162,7 @@
         renderEditItems();
     };
 
-    // ৫. আপডেট করা তথ্য Supabase-এ সেভ করা
+    // ৬. আপডেট করা তথ্য Supabase-এ সেভ করা
     document.getElementById('save-edited-order-btn').onclick = async function () {
         const sb = getSupabaseClient();
         const newAddress = document.getElementById('edit-order-address').value.trim();
@@ -188,7 +185,7 @@
                 delivery_address: newAddress
             })
             .eq('id', currentOrder.id)
-            .eq('status', 'pending'); // ডাবল চেক যেন শুধু pending অর্ডারই আপডেট হয়
+            .eq('status', 'pending');
 
         btn.innerText = '✅ আপডেট করুন';
         btn.disabled = false;
@@ -198,7 +195,7 @@
         } else {
             alert('আপনার অর্ডারটি সফলভাবে আপডেট করা হয়েছে!');
             document.getElementById('custom-order-edit-modal').style.display = 'none';
-            location.reload(); // নতুন তথ্য দেখানোর জন্য পেজ রিলোড
+            location.reload();
         }
     };
 
