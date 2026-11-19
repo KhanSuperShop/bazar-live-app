@@ -475,7 +475,7 @@
             </div>
             <div style="background: rgba(0,0,0,0.25); padding: 10px 14px; border-radius: 8px; text-align: center; min-width: 150px;">
                 <div style="font-size: 11px; color: #fde047; margin-bottom: 4px;">⏳ অফার শেষ হতে বাকি:</div>
-                <div id="offer-countdown-timer" style="font-size: 16px; font-weight: bold; letter-spacing: 1px; color: #fff;">০০ঘ : ০০মি : ০০সে</div>
+                <div id="offer-countdown-timer" style="font-size: 16px; font-weight: bold; letter-spacing: 1px; color: #fff;">00h : 00m : 00s
             </div>
         `;
 
@@ -493,7 +493,7 @@
             const hrs = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
             const mins = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
             const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-            timerEl.innerText = `${hrs}ঘ : ${mins}মি : ${secs}সে`;
+            timerEl.innerText = `${hrs}h : ${mins}m : ${secs}s`;
         }
         updateCountdown();
         setInterval(updateCountdown, 1000);
