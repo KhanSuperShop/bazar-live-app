@@ -302,3 +302,64 @@
         }, 900);
     });
 })();
+    // --- আপডেট ৩: প্রোডাক্ট কুইক-ভিউ পপ-আপ (ছবিতে ক্লিক করলে বড় ছবি ও বিস্তারিত) ---
+    function setupProductQuickView() {
+        const productGrid = document.querySelector('#product-list, .product-grid, .products-grid');
+        if (!productGrid) return;
+
+        Array.from(productGrid.children).forEach(card => {
+            const img = card.querySelector('img');
+            if (!img || img.dataset.quickViewBound) return;
+
+            img.style.cursor = 'zoom-in';
+            img.title = 'বিস্তারিত দেখতে ক্লিক করুন';
+            img.dataset.quickViewBound = 'true';
+
+            img.onclick = function() {
+                const title = card.querySelector('h3, h4')?.innerText || 'পণ্যের বিবরণ';
+                const desc = card.querySelector('p')?.innerText || 'তাজা ও মানসম্মত পণ্য।';
+                const addBtn = card.querySelector('button');
+                const isOutOfStock = addBtn && addBtn.disabled;
+
+                // দাম বের করা
+                const priceMatch = card.innerText.match(/৳\s*\d+/g);
+                const priceText = priceMatch ? priceMatch[priceMatch.length - 1] : '';
+
+                const modal = document.createElement('div');
+                modal.id = 'product-quickview-modal';
+                modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); display:flex; align-items:center; justify-content:center; z-index:9999; padding:15px;';
+
+                modal.innerHTML = `
+                    <div style="background:#fff; max-width:380px; width:100%; padding:20px; border-radius:12px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.25); position:relative;">
+                        <button type="button" onclick="document.getElementById('product-quickview-modal').remove()" style="position:absolute; top:10px; right:12px; background:#f3f4f6; border:none; width:30px; height:30px; border-radius:50%; font-size:16px; cursor:pointer; font-weight:bold;">✕</button>
+                        <img src="${img.src}" style="width:100%; max-height:240px; object-fit:contain; border-radius:8px; margin-bottom:12px; background:#f9fafb; padding:5px;">
+                        <h3 style="margin:0 0 6px 0; color:#1f2937; font-size:20px;">${title}</h3>
+                        <p style="margin:0 0 12px 0; color:#6b7280; font-size:14px; line-height:1.5;">${desc}</p>
+                        <div style="font-size:22px; font-weight:bold; color:#16a34a; margin-bottom:15px;">${priceText}</div>
+                        <button type="button" id="qv-add-btn" ${isOutOfStock ? 'disabled' : ''} style="width:100%; background:${isOutOfStock ? '#dc2626' : '#16a34a'}; color:#fff; border:none; padding:12px; border-radius:6px; font-size:16px; font-weight:bold; cursor:${isOutOfStock ? 'not-allowed' : 'pointer'};">
+                            ${isOutOfStock ? '❌ স্টক শেষ' : '🛒 কার্টে যোগ করুন'}
+                        </button>
+                    </div>
+                `;
+
+                document.body.appendChild(modal);
+
+                // পপ-আপের বাটনে ক্লিক করলে মূল কার্ডের বাটনে ক্লিক হবে
+                const qvBtn = document.getElementById('qv-add-btn');
+                if (qvBtn && !isOutOfStock && addBtn) {
+                    qvBtn.onclick = function() {
+                        addBtn.click();
+                        modal.remove();
+                    };
+                }
+
+                // পপ-আপের বাইরে ক্লিক করলে বন্ধ হবে
+                modal.onclick = function(e) {
+                    if (e.target === modal) modal.remove();
+                };
+            };
+        });
+    }
+
+    // নিচের setInterval-এর ভেতরে setupProductQuickView() চালু রাখা
+    setInterval(setupProductQuickView, 1000);
