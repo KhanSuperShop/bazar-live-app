@@ -386,15 +386,22 @@
         // ২. ডার্ক মোড বাটন (🌙)
         if (!document.getElementById('dark-mode-toggle')) {
             const darkStyle = document.createElement('style');
-            darkStyle.innerHTML = `
+                      darkStyle.innerHTML = `
                 body.dark-theme { background-color: #121212 !important; color: #e5e7eb !important; }
-                body.dark-theme .orders-container, body.dark-theme #cart-section, body.dark-theme aside,
+                body.dark-theme main > div > div, body.dark-theme .cart-container, body.dark-theme .cart-box,
+                body.dark-theme #cart-section, body.dark-theme aside, body.dark-theme div[style*="background"],
                 body.dark-theme #product-list > div, body.dark-theme .product-grid > div, body.dark-theme .products-grid > div {
                     background-color: #1e1e1e !important; color: #f3f4f6 !important; border-color: #333 !important;
                 }
-                body.dark-theme h2, body.dark-theme h3, body.dark-theme label { color: #f9fafb !important; }
-                body.dark-theme input, body.dark-theme textarea { background-color: #2a2a2a !important; color: #fff !important; border-color: #444 !important; }
-                body.dark-theme #delivery-charge-info { background-color: #143322 !important; color: #86efac !important; }
+                body.dark-theme h2, body.dark-theme h3, body.dark-theme label, body.dark-theme p, body.dark-theme span {
+                    color: #f3f4f6 !important;
+                }
+                body.dark-theme input, body.dark-theme textarea {
+                    background-color: #2a2a2a !important; color: #ffffff !important; border-color: #555 !important;
+                }
+                body.dark-theme #delivery-charge-info {
+                    background-color: #143322 !important; color: #86efac !important;
+                }
             `;
             document.head.appendChild(darkStyle);
 
