@@ -44,22 +44,21 @@
     let currentOrder = null;
     let currentItems = [];
 
-    // ৩. প্রতি ৫০০ মিলিসেকেন্ড পরপর চেক করে বাটন বসিয়ে দেওয়া
+    // ৩. শুধুমাত্র পেন্ডিং অর্ডারের নিচে বাটন বসিয়ে দেওয়া
     setInterval(() => {
         const allElements = document.querySelectorAll('div, p, h4, h5, span, strong, b');
         allElements.forEach(el => {
             if (el.children.length === 0 && /অর্ডার\s*#\d+/.test(el.textContent)) {
-                // অর্ডার কার্ডটি খুঁজে বের করা
                 let card = el.closest('div[style*="border"]') || el.parentElement.parentElement || el.parentElement;
                 if (!card || card.dataset.editInjected) return;
 
                 const match = el.textContent.match(/#(\d+)/);
-                if (match && match) {
-                    const orderId = match;
+                if (match && match[1]) {
+                    const orderId = match[1];
                     card.dataset.editInjected = "true";
 
-                    // শুধুমাত্র pending অর্ডারে রাখতে চাইলে নিচের if লাইনটি আনকমেন্ট করতে পারেন
-                    // if (card.innerText.includes('সম্পন্ন')) return;
+                    // অর্ডারটি সম্পন্ন বা Confirmed হলে বাটন দেখাবে না
+                    if (card.innerText.includes('সম্পন্ন') || card.innerText.includes('Confirmed')) return;
 
                     const editBtn = document.createElement('button');
                     editBtn.type = 'button';
@@ -96,9 +95,8 @@
             return;
         }
 
-        // যদি অর্ডারটি সম্পন্ন হয়ে যায় তবে সতর্কবার্তা দেখাবে
         if (data.status !== 'pending') {
-            alert('দুঃখিত, এই অর্ডারটি ইতিমধ্যে "' + data.status + '" হয়ে গেছে, তাই আর এডিট করা যাবে না। শুধুমাত্র পেন্ডিং অর্ডার এডিট করা যায়।');
+            alert('দুঃখিত, এই অর্ডারটি ইতিমধ্যে কনফার্ম বা সম্পন্ন হয়ে গেছে, তাই আর এডিট করা যাবে না।');
             return;
         }
 
