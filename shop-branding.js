@@ -236,65 +236,59 @@
         }
     `;
     document.head.appendChild(gridStyle);
-    // --- আপডেট ১: স্মার্ট ক্যাটাগরি ফিল্টার বাটন ---
+        // --- আপডেট ১: স্মার্ট ক্যাটাগরি ফিল্টার বাটন ('অন্যান্য' সহ) ---
     function setupCategoryFilters() {
         const heading = Array.from(document.querySelectorAll('h2, h3')).find(el => el.innerText.includes('আমাদের পণ্যসমূহ'));
         if (!heading || document.getElementById('smart-category-bar')) return;
 
-        const categories = [
-            { label: '🛒 সব পণ্য', keywords: [] },
+        const mainCategories = [
             { label: '🌾 চাল ও ডাল', keywords: ['চাল', 'ডাল', 'মসুর', 'খেসারি', 'মুগ', 'ছোলা'] },
             { label: '🛢️ তেল ও মসলা', keywords: ['তেল', 'সয়াবিন', 'সরিষা', 'লবণ', 'চিনি', 'হলুদ', 'মরিচ', 'মসলা', 'জিরা'] },
             { label: '🥖 আটা, ময়দা ও সুজি', keywords: ['আটা', 'ময়দা', 'ময়দা', 'সুজি', 'বিস্কুট', 'সেমাই'] },
             { label: '🧅 কাঁচাবাজার', keywords: ['পেঁয়াজ', 'পেঁয়াজ', 'রসুন', 'আদা', 'আলু', 'সবজি', 'টমেটো', 'কাঁচা'] }
         ];
 
+        const allButtons = [
+            { label: '🛒 সব পণ্য', type: 'all' },
+            ...mainCategories.map(c => ({ ...c, type: 'normal' })),
+            { label: '📦 অন্যান্য', type: 'others' }
+        ];
+
         const bar = document.createElement('div');
         bar.id = 'smart-category-bar';
         bar.style.cssText = 'display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 18px 0;';
 
-        categories.forEach((cat, index) => {
+        allButtons.forEach((cat, index) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.innerText = cat.label;
             btn.style.cssText = index === 0
-                ? 'background: #16a34a; color: white; border: 1px solid #16a34a; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s;'
-                : 'background: #fff; color: #333; border: 1px solid #ccc; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;';
+                ? 'background: #16a34a; color: white; border: 1px solid #16a34a; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;'
+                : 'background: #fff; color: #333; border: 1px solid #ccc; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;';
 
             btn.onclick = function() {
-                // সব বাটনের রঙ রিসেট করা
                 bar.querySelectorAll('button').forEach(b => {
-                    b.style.background = '#fff';
-                    b.style.color = '#333';
-                    b.style.borderColor = '#ccc';
+                    b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#ccc';
                 });
-                // সিলেক্ট করা বাটন সবুজ করা
-                btn.style.background = '#16a34a';
-                btn.style.color = 'white';
-                btn.style.borderColor = '#16a34a';
+                btn.style.background = '#16a34a'; btn.style.color = 'white'; btn.style.borderColor = '#16a34a';
 
-                // পণ্যের কার্ডগুলো ফিল্টার করা
                 const productGrid = document.querySelector('#product-list, .product-grid, .products-grid');
                 if (!productGrid) return;
 
                 Array.from(productGrid.children).forEach(card => {
                     const text = card.innerText.toLowerCase();
-                    if (cat.keywords.length === 0) {
+                    if (cat.type === 'all') {
                         card.style.display = '';
-                    } else {
-                        const match = cat.keywords.some(kw => text.includes(kw));
-                        card.style.display = match ? '' : 'none';
+                    } else if (cat.type === 'normal') {
+                        card.style.display = cat.keywords.some(kw => text.includes(kw)) ? '' : 'none';
+                    } else if (cat.type === 'others') {
+                        const inAnyMain = mainCategories.some(mc => mc.keywords.some(kw => text.includes(kw)));
+                        card.style.display = !inAnyMain ? '' : 'none';
                     }
                 });
             };
-
             bar.appendChild(btn);
         });
 
         heading.insertAdjacentElement('afterend', bar);
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        setupCategoryFilters();
-        setTimeout(setupCategoryFilters, 1000);
-    });
