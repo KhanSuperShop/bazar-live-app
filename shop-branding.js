@@ -123,8 +123,10 @@
 
                 // ডিসকাউন্ট (%) ব্যাজ ও পুরোনো দাম কেটে নতুন দাম দেখানো
                 if (!card.dataset.discountApplied) {
+                    const headingText = (card.querySelector('h3, h4')?.innerText || cardText).trim().toLowerCase();
+
                     for (const [title, info] of Object.entries(discountProductsMap)) {
-                        if (cardText.includes(title)) {
+                        if (headingText.includes(title) || cardText.includes(title)) {
                             const oldP = Number(info.old_price);
                             const newP = Number(info.price);
                             const percentOff = Math.round(((oldP - newP) / oldP) * 100);
@@ -139,11 +141,14 @@
                                 card.appendChild(badge);
                             }
 
-                            // ২. পুরোনো দাম কেটে পাশে নতুন দাম দেখানো
-                            card.innerHTML = card.innerHTML.replace(
-                                `৳${info.price}`,
-                                `<del style="color:#888; font-size:13px; margin-right:6px;">৳${oldP}</del><span style="color:#dc2626; font-weight:bold; font-size:16px;">৳${newP}</span>`
+                            // ২. দামের এলিমেন্টটি সরাসরি খুঁজে পুরোনো দাম কাটা ও নতুন দাম বসানো
+                            const priceEl = Array.from(card.querySelectorAll('p, span, div, h4, strong, b')).find(el => 
+                                el.children.length === 0 && el.innerText.includes('৳')
                             );
+
+                            if (priceEl) {
+                                priceEl.innerHTML = `<del style="color:#888; font-size:13px; margin-right:6px;">৳${oldP}</del><span style="color:#dc2626; font-weight:bold; font-size:16px;">৳${newP}</span>`;
+                            }
 
                             card.dataset.discountApplied = 'true';
                             break;
