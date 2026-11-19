@@ -1,13 +1,11 @@
 (function() {
-    const SB_URL = 'https://kuecacvhadqzywvkmauo.supabase.co'; 
-    const SB_KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI';
+    const SUPABASE_URL = 'https://kuecacvhadqzywvkmauo.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI';
+    // ১. দোকানের নাম, ঠিকানা, ফোন ও অফার ব্যানার লোড
     async function applyShopSettings() {
         try {
             const res = await fetch(SB_URL + '/rest/v1/shop_settings?select=*', {
-                headers: {
-                    'apikey': SB_KEY,
-                    'Authorization': 'Bearer ' + SB_KEY
-                }
+                headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
             });
             const data = await res.json();
             if (!Array.isArray(data) || data.length === 0) return;
@@ -51,34 +49,16 @@
                 bannerBar.innerHTML = '<marquee behavior="scroll" direction="left" scrollamount="5">🎉 ' + bannerText + '</marquee>';
             }
 
-            if (document.getElementById('shop-name')) document.getElementById('shop-name').innerText = shopName;
-            if (document.getElementById('shop-phone')) document.getElementById('shop-phone').innerText = shopPhone;
-            if (document.getElementById('shop-address')) document.getElementById('shop-address').innerText = shopAddress;
-            if (document.getElementById('offer-banner-text')) document.getElementById('offer-banner-text').innerText = bannerText;
-
+            if (s.delivery_charge !== undefined) shopDeliveryCharge = Number(s.delivery_charge);
+            if (s.free_delivery_limit !== undefined) shopFreeLimit = Number(s.free_delivery_limit);
         } catch (err) {
-            console.error('সেটিংস লোড হতে সমস্যা:', err);
+            console.error('সেটিংস লোড সমস্যা:', err);
         }
     }
 
-    window.addEventListener('DOMContentLoaded', applyShopSettings);
-})();
-    // --- ফিচার ২: ডেলিভারি চার্জ ও ফ্রি ডেলিভারি অটো-ক্যালকুলেটর ---
+    // ২. ডেলিভারি চার্জ ও ফ্রি ডেলিভারি অটো-ক্যালকুলেটর
     let shopDeliveryCharge = 50;
     let shopFreeLimit = 1000;
-
-    async function loadDeliveryRules() {
-        try {
-            const res = await fetch(SB_URL + '/rest/v1/shop_settings?select=*', {
-                headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-            });
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-                if (data[0].delivery_charge !== undefined) shopDeliveryCharge = Number(data[0].delivery_charge);
-                if (data[0].free_delivery_limit !== undefined) shopFreeLimit = Number(data[0].free_delivery_limit);
-            }
-        } catch (e) {}
-    }
 
     function updateDeliveryUI() {
         const totalEl = document.getElementById('total-price');
@@ -105,105 +85,58 @@
         }
     }
 
-    window.addEventListener('DOMContentLoaded', async () => {
-        await loadDeliveryRules();
-        updateDeliveryUI();
-        setInterval(updateDeliveryUI, 800);
-    });
-    // --- ফিচার ৩: স্টক আউট (Out of Stock) অটো-কন্ট্রোল ---
+    // ৩. স্টক আউট ও ডিসকাউন্ট ব্যাজ
     let outOfStockTitles = [];
-
-    async function loadOutOfStockProducts() {
-        try {
-            const res = await fetch(SB_URL + '/rest/v1/products?select=title,in_stock', {
-                headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-            });
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                outOfStockTitles = data
-                    .filter(p => p.in_stock === false)
-                    .map(p => p.title.trim().toLowerCase());
-            }
-        } catch (e) {}
-    }
-
-    function applyOutOfStockBadges() {
-        if (outOfStockTitles.length === 0) return;
-
-        // পণ্যের কার্ডগুলো খুঁজে স্টক চেক করা
-        document.querySelectorAll('button').forEach(btn => {
-            if (btn.innerText.includes('কার্টে যোগ করুন')) {
-                const card = btn.parentElement;
-                const cardText = card ? card.innerText.toLowerCase() : '';
-                const isOut = outOfStockTitles.some(title => cardText.includes(title));
-
-                if (isOut) {
-                    btn.disabled = true;
-                    btn.innerText = '❌ স্টক শেষ';
-                    btn.style.backgroundColor = '#dc2626';
-                    btn.style.cursor = 'not-allowed';
-                    btn.style.opacity = '0.85';
-                }
-            }
-        });
-    }
-
-    window.addEventListener('DOMContentLoaded', async () => {
-        await loadOutOfStockProducts();
-        applyOutOfStockBadges();
-        setInterval(applyOutOfStockBadges, 1000);
-    });
-    // --- ফিচার ৫: পণ্যের ডিসকাউন্ট বা আগের কাটা দাম দেখানো ---
     let discountProductsMap = {};
 
-    async function loadDiscountPrices() {
+    async function loadProductStatuses() {
         try {
-            const res = await fetch(SB_URL + '/rest/v1/products?select=title,price,old_price', {
+            const res = await fetch(SB_URL + '/rest/v1/products?select=title,price,old_price,in_stock', {
                 headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
             });
             const data = await res.json();
             if (Array.isArray(data)) {
+                outOfStockTitles = data.filter(p => p.in_stock === false).map(p => p.title.trim().toLowerCase());
                 data.forEach(p => {
                     if (p.old_price && Number(p.old_price) > Number(p.price)) {
-                        discountProductsMap[p.title.trim().toLowerCase()] = {
-                            price: p.price,
-                            old_price: p.old_price
-                        };
+                        discountProductsMap[p.title.trim().toLowerCase()] = { price: p.price, old_price: p.old_price };
                     }
                 });
             }
         } catch (e) {}
     }
 
-    function applyDiscountBadges() {
-        if (Object.keys(discountProductsMap).length === 0) return;
-
+    function applyProductBadges() {
         document.querySelectorAll('button').forEach(btn => {
             if (btn.innerText.includes('কার্টে যোগ করুন') || btn.innerText.includes('স্টক শেষ')) {
                 const card = btn.parentElement;
-                if (!card || card.dataset.discountApplied) return;
-
+                if (!card) return;
                 const cardText = card.innerText.toLowerCase();
-                for (const [title, info] of Object.entries(discountProductsMap)) {
-                    if (cardText.includes(title)) {
-                        card.innerHTML = card.innerHTML.replace(
-                            `৳${info.price}`,
-                            `<del style="color:#888; font-size:14px; margin-right:6px;">৳${info.old_price}</del><span style="color:#dc2626; font-weight:bold;">৳${info.price}</span> <span style="background:#fef2f2; color:#dc2626; font-size:11px; padding:2px 6px; border-radius:4px; border:1px solid #fecaca;">অফার!</span>`
-                        );
-                        card.dataset.discountApplied = 'true';
-                        break;
+
+                if (outOfStockTitles.some(title => cardText.includes(title))) {
+                    btn.disabled = true;
+                    btn.innerText = '❌ স্টক শেষ';
+                    btn.style.backgroundColor = '#dc2626';
+                    btn.style.cursor = 'not-allowed';
+                }
+
+                if (!card.dataset.discountApplied) {
+                    for (const [title, info] of Object.entries(discountProductsMap)) {
+                        if (cardText.includes(title)) {
+                            card.innerHTML = card.innerHTML.replace(
+                                `৳${info.price}`,
+                                `<del style="color:#888; font-size:13px; margin-right:5px;">৳${info.old_price}</del><span style="color:#dc2626; font-weight:bold;">৳${info.price}</span>`
+                            );
+                            card.dataset.discountApplied = 'true';
+                            break;
+                        }
                     }
                 }
             }
         });
     }
 
-    window.addEventListener('DOMContentLoaded', async () => {
-        await loadDiscountPrices();
-        applyDiscountBadges();
-        setInterval(applyDiscountBadges, 1000);
-    });
-    // --- এক লাইনে ৪টি করে পণ্য দেখানোর গ্রিড স্টাইল ---
+    // ৪. এক লাইনে ৪টি পণ্য দেখানোর গ্রিড স্টাইল
     const gridStyle = document.createElement('style');
     gridStyle.innerHTML = `
         @media (min-width: 900px) {
@@ -236,7 +169,8 @@
         }
     `;
     document.head.appendChild(gridStyle);
-        // --- আপডেট ১: স্মার্ট ক্যাটাগরি ফিল্টার বাটন ('অন্যান্য' সহ) ---
+
+    // ৫. স্মার্ট ক্যাটাগরি ফিল্টার বাটন ('অন্যান্য' সহ)
     function setupCategoryFilters() {
         const heading = Array.from(document.querySelectorAll('h2, h3')).find(el => el.innerText.includes('আমাদের পণ্যসমূহ'));
         if (!heading || document.getElementById('smart-category-bar')) return;
@@ -266,7 +200,7 @@
                 ? 'background: #16a34a; color: white; border: 1px solid #16a34a; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;'
                 : 'background: #fff; color: #333; border: 1px solid #ccc; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;';
 
-            btn.onclick = function() {
+                        btn.onclick = function() {
                 bar.querySelectorAll('button').forEach(b => {
                     b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#ccc';
                 });
@@ -291,4 +225,80 @@
         });
 
         heading.insertAdjacentElement('afterend', bar);
+    }
+
+    // ৬. কাস্টমারের জন্য "📋 আমার অর্ডার" বাটন
+    function setupMyOrdersButton() {
+        const header = document.querySelector('header');
+        if (!header || document.getElementById('my-orders-btn')) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'my-orders-btn';
+        btn.innerHTML = '📋 আমার অর্ডার';
+        btn.style.cssText = 'margin-top: 8px; background: #fff; color: #16a34a; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15);';
+
+        btn.onclick = async function() {
+            const phone = prompt("আপনার অর্ডার দেখতে মোবাইল নাম্বারটি লিখুন:");
+            if (!phone || !phone.trim()) return;
+
+            try {
+                const res = await fetch(`${SB_URL}/rest/v1/orders?phone_number=eq.${encodeURIComponent(phone.trim())}&select=*`, {
+                    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+                });
+                const orders = await res.json();
+
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    return alert("এই নাম্বারে কোনো অর্ডার খুঁজে পাওয়া যায়নি!");
+                }
+
+                const modal = document.createElement('div');
+                modal.id = 'my-orders-modal';
+                modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999; padding:15px;';
+
+                const ordersHtml = orders.reverse().map(o => {
+                    const date = o.created_at ? new Date(o.created_at).toLocaleDateString('bn-BD') : '';
+                    const items = Array.isArray(o.items) ? o.items.map(i => `${i.title} (${i.quantity}টি)`).join(', ') : '';
+                    return `
+                        <div style="background:#f9fafb; border:1px solid #ddd; border-left:4px solid #16a34a; padding:10px; border-radius:6px; margin-bottom:10px; text-align:left; font-size:13px;">
+                            <div style="display:flex; justify-content:space-between; font-weight:bold; color:#333;">
+                                <span>অর্ডার #${o.id}</span>
+                                <span style="color:#666;">${date}</span>
+                            </div>
+                            <div style="margin:5px 0; color:#16a34a;">${items}</div>
+                            <div style="font-weight:bold; color:#dc2626;">মোট বিল: ৳${o.total_amount} টাকা</div>
+                        </div>
+                    `;
+                }).join('');
+
+                modal.innerHTML = `
+                    <div style="background:#fff; max-width:420px; width:100%; max-height:80vh; overflow-y:auto; padding:20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                        <h3 style="margin-top:0; color:#16a34a; border-bottom:2px solid #16a34a; padding-bottom:8px;">📋 আপনার পূর্ববর্তী অর্ডারসমূহ</h3>
+                        ${ordersHtml}
+                        <button type="button" onclick="document.getElementById('my-orders-modal').remove()" style="width:100%; background:#dc2626; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">বন্ধ করুন</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } catch (e) {
+                alert("অর্ডার লোড করতে সমস্যা হয়েছে!");
+            }
+        };
+
+        header.appendChild(btn);
+    }
+
+    // সব ফাংশন একসাথে চালু করা
+    window.addEventListener('DOMContentLoaded', async () => {
+        await applyShopSettings();
+        await loadProductStatuses();
+        setupCategoryFilters();
+        setupMyOrdersButton();
+        updateDeliveryUI();
+        applyProductBadges();
+
+        setInterval(() => {
+            updateDeliveryUI();
+            applyProductBadges();
+        }, 900);
     });
+})();
