@@ -249,7 +249,7 @@
         heading.insertAdjacentElement('afterend', bar);
     }
 
-    // ৬. কাস্টমারের জন্য "📋 আমার অর্ডার" বাটন
+        // ৬. কাস্টমারের জন্য "📋 আমার অর্ডার" বাটন (এডিট ও বাতিল করার সুবিধাসহ)
     function setupMyOrdersButton() {
         const header = document.querySelector('header');
         if (!header || document.getElementById('my-orders-btn')) return;
@@ -274,6 +274,9 @@
                     return alert("এই নাম্বারে কোনো অর্ডার খুঁজে পাওয়া যায়নি!");
                 }
 
+                const existingModal = document.getElementById('my-orders-modal');
+                if (existingModal) existingModal.remove();
+
                 const modal = document.createElement('div');
                 modal.id = 'my-orders-modal';
                 modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999; padding:15px;';
@@ -281,23 +284,32 @@
                 const ordersHtml = orders.reverse().map(o => {
                     const date = o.created_at ? new Date(o.created_at).toLocaleDateString('bn-BD') : '';
                     const items = Array.isArray(o.items) ? o.items.map(i => `${i.title} (${i.quantity}টি)`).join(', ') : '';
+                    const isPending = !o.status || o.status === 'Pending';
+
                     return `
-                        <div style="background:#f9fafb; border:1px solid #ddd; border-left:4px solid #16a34a; padding:10px; border-radius:6px; margin-bottom:10px; text-align:left; font-size:13px;">
+                        <div style="background:#f9fafb; border:1px solid #ddd; border-left:4px solid ${isPending ? '#f59e0b' : '#16a34a'}; padding:12px; border-radius:6px; margin-bottom:10px; text-align:left; font-size:13px;">
                             <div style="display:flex; justify-content:space-between; font-weight:bold; color:#333;">
-                                <span>অর্ডার #${o.id}</span>
+                                <span>অর্ডার #${o.id} (${isPending ? '⏳ অপেক্ষমাণ' : '✅ সম্পন্ন'})</span>
                                 <span style="color:#666;">${date}</span>
                             </div>
-                            <div style="margin:5px 0; color:#16a34a;">${items}</div>
-                            <div style="font-weight:bold; color:#dc2626;">মোট বিল: ৳${o.total_amount} টাকা</div>
+                            <div style="margin:5px 0; color:#16a34a; font-weight:500;">${items}</div>
+                            <div style="font-size:12px; color:#555; margin-bottom:4px;">📍 ঠিকানা: ${o.address || ''}</div>
+                            <div style="font-weight:bold; color:#dc2626; margin-bottom:8px;">মোট বিল: ৳${o.total_amount} টাকা</div>
+                            ${isPending ? `
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" onclick="customerEditOrder(${o.id}, '${String(o.address || '').replace(/'/g, "\\'")}')" style="flex:1; background:#2563eb; color:#fff; border:none; padding:6px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">✏️ ঠিকানা/নোট এডিট</button>
+                                    <button type="button" onclick="customerCancelOrder(${o.id})" style="flex:1; background:#dc2626; color:#fff; border:none; padding:6px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">❌ অর্ডার বাতিল</button>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
 
                 modal.innerHTML = `
-                    <div style="background:#fff; max-width:420px; width:100%; max-height:80vh; overflow-y:auto; padding:20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                    <div style="background:#fff; max-width:430px; width:100%; max-height:80vh; overflow-y:auto; padding:20px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
                         <h3 style="margin-top:0; color:#16a34a; border-bottom:2px solid #16a34a; padding-bottom:8px;">📋 আপনার পূর্ববর্তী অর্ডারসমূহ</h3>
                         ${ordersHtml}
-                        <button type="button" onclick="document.getElementById('my-orders-modal').remove()" style="width:100%; background:#dc2626; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">বন্ধ করুন</button>
+                        <button type="button" onclick="document.getElementById('my-orders-modal').remove()" style="width:100%; background:#374151; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">বন্ধ করুন</button>
                     </div>
                 `;
                 document.body.appendChild(modal);
@@ -306,9 +318,53 @@
             }
         };
 
+        // কাস্টমারের ঠিকানা বা অতিরিক্ত পণ্যের নোট এডিট করার ফাংশন
+        window.customerEditOrder = async function(orderId, oldAddress) {
+            const newAddress = prompt("নতুন ডেলিভারি ঠিকানা বা অতিরিক্ত কোনো পণ্যের নোট লিখুন:", oldAddress);
+            if (!newAddress || newAddress.trim() === "") return;
+
+            const res = await fetch(`${SB_URL}/rest/v1/orders?id=eq.${orderId}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SB_KEY,
+                    'Authorization': 'Bearer ' + SB_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ address: newAddress.trim() })
+            });
+
+            if (res.ok) {
+                alert("আপনার অর্ডারের তথ্য সফলভাবে আপডেট হয়েছে! ✅");
+                document.getElementById('my-orders-modal')?.remove();
+            } else {
+                alert("আপডেট করা যায়নি! Supabase-এ orders টেবিলের UPDATE পলিসি চালু আছে কি না দেখুন।");
+            }
+        };
+
+        // কাস্টমারের অর্ডার বাতিল করার ফাংশন
+        window.customerCancelOrder = async function(orderId) {
+            if (!confirm("আপনি কি নিশ্চিত যে এই অর্ডারটি বাতিল করতে চান?")) return;
+
+            const res = await fetch(`${SB_URL}/rest/v1/orders?id=eq.${orderId}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SB_KEY,
+                    'Authorization': 'Bearer ' + SB_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'Cancelled' })
+            });
+
+            if (res.ok) {
+                alert("অর্ডারটি বাতিল করা হয়েছে! ❌");
+                document.getElementById('my-orders-modal')?.remove();
+            } else {
+                alert("বাতিল করা যায়নি! Supabase-এ orders টেবিলের UPDATE পলিসি চেক করুন।");
+            }
+        };
+
         header.appendChild(btn);
     }
-
     // সব ফাংশন একসাথে চালু করা
     window.addEventListener('DOMContentLoaded', async () => {
         await applyShopSettings();
