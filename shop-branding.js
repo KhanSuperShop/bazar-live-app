@@ -291,4 +291,4 @@
         });
 
         heading.insertAdjacentElement('afterend', bar);
-    }
+    });
