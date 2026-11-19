@@ -440,3 +440,94 @@
     }
 
     window.addEventListener('DOMContentLoaded', setupExtraEnhancements);
+    // --- মাসব্যাপী / সাপ্তাহিক অফার প্রোমো কার্ড, কাউন্টডাউন টাইমার ও অফার ফিল্টার ---
+    async function setupPromoOfferSection() {
+        const heading = Array.from(document.querySelectorAll('h2, h3')).find(el => el.innerText.includes('আমাদের পণ্যসমূহ'));
+        if (!heading || document.getElementById('promo-offer-card')) return;
+
+        // ডাটাবেজ থেকে অফার ব্যানারের লেখা আনা
+        let offerHeadline = '🔥 মাসব্যাপী ধামাকা অফার! নির্বাচিত পণ্যে ১০% - ২০% পর্যন্ত বিশেষ ছাড়!';
+        let offerSubtext = 'সীমিত সময়ের জন্য! আজই আপনার পছন্দের বাজার অর্ডার করুন।';
+
+        try {
+            const res = await fetch(SB_URL + '/rest/v1/shop_settings?select=*', {
+                headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+            });
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                const dbText = data[0].banner_text || data[0].offer_text || '';
+                if (dbText && dbText.trim() !== '' && dbText.trim().toLowerCase() !== 'khan super shop') {
+                    offerHeadline = '🔥 ' + dbText.trim();
+                }
+            }
+        } catch (e) {}
+
+        // ১. আকর্ষণীয় অফার প্রোমো কার্ড তৈরি
+        const promoCard = document.createElement('div');
+        promoCard.id = 'promo-offer-card';
+        promoCard.style.cssText = 'background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #fff; padding: 16px 20px; border-radius: 10px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);';
+
+        promoCard.innerHTML = `
+            <div style="flex: 1; min-width: 220px;">
+                <div style="display: inline-block; background: #facc15; color: #000; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;">✨ স্পেশাল ক্যাম্পেইন • ১০% - ২০% ছাড়</div>
+                <h3 style="margin: 0 0 4px 0; font-size: 18px; color: #fff !important;">${offerHeadline}</h3>
+                <p style="margin: 0; font-size: 13px; color: #fee2e2 !important;">${offerSubtext}</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.25); padding: 10px 14px; border-radius: 8px; text-align: center; min-width: 150px;">
+                <div style="font-size: 11px; color: #fde047; margin-bottom: 4px;">⏳ অফার শেষ হতে বাকি:</div>
+                <div id="offer-countdown-timer" style="font-size: 16px; font-weight: bold; letter-spacing: 1px; color: #fff;">০০ঘ : ০০মি : ০০সে</div>
+            </div>
+        `;
+
+        heading.insertAdjacentElement('beforebegin', promoCard);
+
+        // ২. লাইভ কাউন্টডাউন টাইমার (প্রতিদিন রাত ১২টা পর্যন্ত রিসেট হবে)
+        function updateCountdown() {
+            const timerEl = document.getElementById('offer-countdown-timer');
+            if (!timerEl) return;
+            const now = new Date();
+            const midnight = new Date();
+            midnight.setHours(23, 59, 59, 999);
+            const diff = midnight - now;
+
+            const hrs = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+            const mins = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
+            const secs = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+            timerEl.innerText = `${hrs}ঘ : ${mins}মি : ${secs}সে`;
+        }
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // ৩. ক্যাটাগরি বারে "🔥 ১০%-২০% ছাড়" ফিল্টার বাটন যুক্ত করা
+        const catBar = document.getElementById('smart-category-bar');
+        if (catBar && !document.getElementById('offer-filter-btn')) {
+            const offerBtn = document.createElement('button');
+            offerBtn.type = 'button';
+            offerBtn.id = 'offer-filter-btn';
+            offerBtn.innerText = '🔥 ১০%-২০% ছাড়';
+            offerBtn.style.cssText = 'background: #fef2f2; color: #dc2626; border: 1px solid #dc2626; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;';
+
+            offerBtn.onclick = function() {
+                catBar.querySelectorAll('button').forEach(b => {
+                    b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#ccc';
+                });
+                offerBtn.style.background = '#dc2626';
+                offerBtn.style.color = '#fff';
+                offerBtn.style.borderColor = '#dc2626';
+
+                const productGrid = document.querySelector('#product-list, .product-grid, .products-grid');
+                if (!productGrid) return;
+
+                Array.from(productGrid.children).forEach(card => {
+                    // যেসব পণ্যে কাটা দাম (<del>) আছে, শুধু সেগুলো দেখাবে
+                    const hasDiscount = card.querySelector('del') !== null || card.dataset.discountApplied === 'true';
+                    card.style.display = hasDiscount ? '' : 'none';
+                });
+            };
+            catBar.appendChild(offerBtn);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(setupPromoOfferSection, 800);
+    });
