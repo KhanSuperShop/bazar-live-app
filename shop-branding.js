@@ -1,6 +1,6 @@
 (function() {
-    const SUPABASE_URL = 'https://kuecacvhadqzywvkmauo.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI';
+    const SB_URL = 'https://kuecacvhadqzywvkmauo.supabase.co'; 
+    const SB_KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI';
     // ১. দোকানের নাম, ঠিকানা, ফোন ও অফার ব্যানার লোড
     async function applyShopSettings() {
         try {
