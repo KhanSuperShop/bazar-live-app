@@ -42,16 +42,17 @@
                 let card = el.closest('div[style*="border"]') || el.parentElement.parentElement || el.parentElement;
                 if (!card || card.dataset.editChecked) return;
 
-                const match = el.textContent.match(/#(\d+)/);
-                if (match && match) {
-                    const orderId = match;
+                // সরাসরি সংখ্যা বের করা (যেমন: "অর্ডার #62" থেকে "62")
+                const orderId = el.textContent.split('#').pop().replace(/\D/g, '');
+                if (orderId) {
                     card.dataset.editChecked = "true";
 
                     try {
                         const res = await fetch(`${URL}/rest/v1/orders?id=eq.${orderId}&select=status`, { headers });
                         if (res.ok) {
                             const rows = await res.json();
-                            if (rows && rows && rows.status === 'pending') {
+                            const orderRow = rows.shift();
+                            if (orderRow && orderRow.status === 'pending') {
                                 if (el.innerHTML.includes('সম্পন্ন')) {
                                     el.innerHTML = el.innerHTML.replace('✅ সম্পন্ন', '⏳ অপেক্ষমাণ').replace('সম্পন্ন', 'অপেক্ষমাণ');
                                 }
@@ -78,7 +79,7 @@
             const response = await fetch(`${URL}/rest/v1/orders?id=eq.${orderId}&select=*`, { headers });
             if (!response.ok) return alert('অর্ডারের তথ্য লোড করা যায়নি!');
             const result = await response.json();
-            const data = result;
+            const data = result.shift();
             if (!data || data.status !== 'pending') return alert('এই অর্ডারটি আর এডিট করা যাবে না।');
 
             currentOrder = data;
