@@ -42,7 +42,6 @@
                 let card = el.closest('div[style*="border"]') || el.parentElement.parentElement || el.parentElement;
                 if (!card || card.dataset.editChecked) return;
 
-                // সরাসরি সংখ্যা বের করা (যেমন: "অর্ডার #62" থেকে "62")
                 const orderId = el.textContent.split('#').pop().replace(/\D/g, '');
                 if (orderId) {
                     card.dataset.editChecked = "true";
@@ -73,7 +72,6 @@
             }
         });
     }, 600);
-
     async function openEditModal(orderId) {
         try {
             const response = await fetch(`${URL}/rest/v1/orders?id=eq.${orderId}&select=*`, { headers });
@@ -96,31 +94,58 @@
     function renderEditItems() {
         const listDiv = document.getElementById('edit-items-list');
         listDiv.innerHTML = '';
-        let subtotal = 0;
 
         currentItems.forEach((item, index) => {
             const itemTotal = item.price * item.quantity;
-            subtotal += itemTotal;
             const row = document.createElement('div');
-            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; font-size:13px;';
+            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; font-size:13px; gap:8px;';
             row.innerHTML = `
                 <div style="flex:1;">
                     <div style="font-weight:bold;">${item.title}</div>
-                    <div style="color:#666;">৳${item.price} x ${item.quantity} = ৳${itemTotal}</div>
+                    <div style="color:#666;">৳${item.price} x <span id="edit-qty-label-${index}">${item.quantity}</span> = ৳<span id="edit-row-total-${index}">${itemTotal}</span></div>
                 </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <button type="button" onclick="window._updateEditQty(${index}, -1)" style="width:28px; height:28px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold;">-</button>
-                    <span style="min-width:20px; text-align:center; font-weight:bold;">${item.quantity}</span>
-                    <button type="button" onclick="window._updateEditQty(${index}, 1)" style="width:28px; height:28px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold;">+</button>
-                    <button type="button" onclick="window._removeEditItem(${index})" style="background:#ffebee; color:#d32f2f; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; margin-left:4px;">🗑️</button>
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <button type="button" onclick="window._updateEditQty(${index}, -1)" style="width:28px; height:30px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold; font-size:15px;">-</button>
+                    <input type="number" min="1" value="${item.quantity}" oninput="window._setExactEditQty(${index}, this.value)" onblur="window._validateEditQty(${index}, this)" style="width:54px; height:30px; text-align:center; font-weight:bold; border:1px solid #bbb; border-radius:4px; font-size:13px; padding:0 2px; box-sizing:border-box;">
+                    <button type="button" onclick="window._updateEditQty(${index}, 1)" style="width:28px; height:30px; border:1px solid #ccc; background:#f1f1f1; border-radius:4px; cursor:pointer; font-weight:bold; font-size:15px;">+</button>
+                    <button type="button" onclick="window._removeEditItem(${index})" style="background:#ffebee; color:#d32f2f; border:none; padding:6px 8px; border-radius:4px; cursor:pointer; margin-left:2px;">🗑️</button>
                 </div>
             `;
             listDiv.appendChild(row);
         });
 
+        recalculateEditTotal();
+    }
+
+    function recalculateEditTotal() {
+        let subtotal = 0;
+        currentItems.forEach((item) => {
+            subtotal += item.price * item.quantity;
+        });
         const deliveryCharge = subtotal > 0 ? (subtotal >= 1000 ? 0 : 30) : 0;
         document.getElementById('edit-order-total').innerText = subtotal + deliveryCharge;
     }
+
+    window._setExactEditQty = function (index, val) {
+        const num = parseInt(val, 10);
+        if (!isNaN(num) && num >= 1) {
+            currentItems[index].quantity = num;
+            document.getElementById(`edit-qty-label-${index}`).innerText = num;
+            document.getElementById(`edit-row-total-${index}`).innerText = currentItems[index].price * num;
+            recalculateEditTotal();
+        }
+    };
+
+    window._validateEditQty = function (index, inputEl) {
+        const num = parseInt(inputEl.value, 10);
+        if (isNaN(num) || num < 1) {
+            currentItems[index].quantity = 1;
+            inputEl.value = 1;
+            document.getElementById(`edit-qty-label-${index}`).innerText = 1;
+            document.getElementById(`edit-row-total-${index}`).innerText = currentItems[index].price;
+            recalculateEditTotal();
+        }
+    };
 
     window._updateEditQty = function (index, change) {
         if (currentItems[index].quantity + change <= 0) {
