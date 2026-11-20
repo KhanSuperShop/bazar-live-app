@@ -1,4 +1,16 @@
 (function () {
+    // ⚠️ এখানে আপনার index.js ফাইল থেকে Supabase URL এবং Key বসিয়ে দিন:
+    const SUPABASE_URL = "https://kuecacvhadqzywvkmauo.supabase.co"; 
+    const SUPABASE_ANON_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI";
+
+    const cleanUrl = SUPABASE_URL.replace(/\/$/, "");
+    const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+    };
+
     // ১. এডিট পপ-আপের জন্য প্রয়োজনীয় HTML যুক্ত করা
     const modalHTML = `
         <div id="custom-order-edit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999999; justify-content:center; align-items:center; font-family:sans-serif;">
@@ -29,37 +41,24 @@
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // ২. Supabase ক্লায়েন্ট খুঁজে বের করা
-    function getSupabaseClient() {
-        for (let key in window) {
-            try {
-                if (window[key] && typeof window[key].from === 'function' && typeof window[key].rpc === 'function') {
-                    return window[key];
-                }
-            } catch (e) {}
-        }
-        return null;
-    }
-
     let currentOrder = null;
     let currentItems = [];
 
-    // ৩. প্রতি ৫০০ মিলিসেকেন্ড পরপর চেক করে বাটন বসিয়ে দেওয়া
+    // ২. শুধুমাত্র পেন্ডিং অর্ডারের নিচে এডিট বাটন বসিয়ে দেওয়া
     setInterval(() => {
         const allElements = document.querySelectorAll('div, p, h4, h5, span, strong, b');
         allElements.forEach(el => {
             if (el.children.length === 0 && /অর্ডার\s*#\d+/.test(el.textContent)) {
-                // অর্ডার কার্ডটি খুঁজে বের করা
                 let card = el.closest('div[style*="border"]') || el.parentElement.parentElement || el.parentElement;
                 if (!card || card.dataset.editInjected) return;
 
                 const match = el.textContent.match(/#(\d+)/);
-                if (match && match) {
-                    const orderId = match;
+                if (match && match[1]) {
+                    const orderId = match[1];
                     card.dataset.editInjected = "true";
 
-                    // শুধুমাত্র pending অর্ডারে রাখতে চাইলে নিচের if লাইনটি আনকমেন্ট করতে পারেন
-                    // if (card.innerText.includes('সম্পন্ন')) return;
+                    // অর্ডারটি সম্পন্ন বা Confirmed হলে বাটন দেখাবে না
+                    if (card.innerText.includes('সম্পন্ন') || card.innerText.includes('Confirmed')) return;
 
                     const editBtn = document.createElement('button');
                     editBtn.type = 'button';
@@ -77,42 +76,51 @@
         });
     }, 500);
 
-    // ৪. Supabase থেকে অর্ডারের তথ্য এনে এডিট মোডাল ওপেন করা
+    // ৩. সরাসরি REST API দিয়ে অর্ডারের তথ্য এনে এডিট মোডাল ওপেন করা
     async function openEditModal(orderId) {
-        const sb = getSupabaseClient();
-        if (!sb) {
-            alert('ডাটাবেজ সংযোগ পাওয়া যায়নি!');
+        if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+            alert('দয়া করে order-edit.js ফাইলে আপনার Supabase URL এবং Key বসিয়ে নিন!');
             return;
         }
 
-        const { data, error } = await sb
-            .from('orders')
-            .select('*')
-            .eq('id', orderId)
-            .single();
+        try {
+            const response = await fetch(`${cleanUrl}/rest/v1/orders?id=eq.${orderId}&select=*`, {
+                method: 'GET',
+                headers: headers
+            });
 
-        if (error || !data) {
-            alert('অর্ডারের তথ্য লোড করা যায়নি!');
-            return;
+            if (!response.ok) {
+                alert('অর্ডারের তথ্য লোড করা যায়নি!');
+                return;
+            }
+
+            const result = await response.json();
+            const data = result[0];
+
+            if (!data) {
+                alert('অর্ডারটি খুঁজে পাওয়া যায়নি!');
+                return;
+            }
+
+            if (data.status !== 'pending') {
+                alert('দুঃখিত, এই অর্ডারটি ইতিমধ্যে কনফার্ম বা সম্পন্ন হয়ে গেছে, তাই আর এডিট করা যাবে না।');
+                return;
+            }
+
+            currentOrder = data;
+            currentItems = Array.isArray(data.items) ? JSON.parse(JSON.stringify(data.items)) : [];
+
+            document.getElementById('edit-order-id').innerText = data.id;
+            document.getElementById('edit-order-address').value = data.delivery_address || '';
+            renderEditItems();
+
+            document.getElementById('custom-order-edit-modal').style.display = 'flex';
+        } catch (err) {
+            alert('নেটওয়ার্ক সমস্যা: ' + err.message);
         }
-
-        // যদি অর্ডারটি সম্পন্ন হয়ে যায় তবে সতর্কবার্তা দেখাবে
-        if (data.status !== 'pending') {
-            alert('দুঃখিত, এই অর্ডারটি ইতিমধ্যে "' + data.status + '" হয়ে গেছে, তাই আর এডিট করা যাবে না। শুধুমাত্র পেন্ডিং অর্ডার এডিট করা যায়।');
-            return;
-        }
-
-        currentOrder = data;
-        currentItems = Array.isArray(data.items) ? JSON.parse(JSON.stringify(data.items)) : [];
-
-        document.getElementById('edit-order-id').innerText = data.id;
-        document.getElementById('edit-order-address').value = data.delivery_address || '';
-        renderEditItems();
-
-        document.getElementById('custom-order-edit-modal').style.display = 'flex';
     }
 
-    // ৫. পণ্যের তালিকা ও পরিমাণ (+/-) রেন্ডার করা
+    // ৪. পণ্যের তালিকা ও পরিমাণ (+/-) রেন্ডার করা
     function renderEditItems() {
         const listDiv = document.getElementById('edit-items-list');
         listDiv.innerHTML = '';
@@ -162,9 +170,8 @@
         renderEditItems();
     };
 
-    // ৬. আপডেট করা তথ্য Supabase-এ সেভ করা
+    // ৫. সরাসরি PATCH রিকোয়েস্ট দিয়ে Supabase-এ অর্ডার আপডেট করা
     document.getElementById('save-edited-order-btn').onclick = async function () {
-        const sb = getSupabaseClient();
         const newAddress = document.getElementById('edit-order-address').value.trim();
         const newTotal = Number(document.getElementById('edit-order-total').innerText);
 
@@ -177,29 +184,35 @@
         btn.innerText = 'আপডেট হচ্ছে...';
         btn.disabled = true;
 
-        const { error } = await sb
-            .from('orders')
-            .update({
-                items: currentItems,
-                total_amount: newTotal,
-                delivery_address: newAddress
-            })
-            .eq('id', currentOrder.id)
-            .eq('status', 'pending');
+        try {
+            const response = await fetch(`${cleanUrl}/rest/v1/orders?id=eq.${currentOrder.id}&status=eq.pending`, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify({
+                    items: currentItems,
+                    total_amount: newTotal,
+                    delivery_address: newAddress
+                })
+            });
 
-        btn.innerText = '✅ আপডেট করুন';
-        btn.disabled = false;
+            btn.innerText = '✅ আপডেট করুন';
+            btn.disabled = false;
 
-        if (error) {
-            alert('আপডেট করতে সমস্যা হয়েছে: ' + error.message);
-        } else {
-            alert('আপনার অর্ডারটি সফলভাবে আপডেট করা হয়েছে!');
-            document.getElementById('custom-order-edit-modal').style.display = 'none';
-            location.reload();
-        }
-    };
-
-    document.getElementById('cancel-edit-order-btn').onclick = function () {
-        document.getElementById('custom-order-edit-modal').style.display = 'none';
-    };
+            if (!response.ok) {
+                const errData = await response.json();
+                alert('আপডেট করতে সমস্যা হয়েছে: ' + (errData.message || 'RLS Policy চেক করুন'));
+            } else {
+                alert('আপনার অর্ডারটি সফলভাবে আপডেট করা হয়েছে!');
+                document.getElementById('custom-order-edit-modal').style.display = 'none';
+                location.reload();
+            }
+        } catch (err) {
+            btn.innerText = '✅ আপডেট করুন';
+            btn.disabled = false;
+            alert('নেটওয়ার্ক এরর: ' + err.message);
+         }
+      };
+           document.getElementById('cancel-edit-order-btn').onclick = function () {
+           document.getElementById('custom-order-edit-modal').style.display = 'none';
+      };
 })();
