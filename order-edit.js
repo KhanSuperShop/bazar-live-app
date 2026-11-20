@@ -1,12 +1,10 @@
 (function () {
-    // ⚠️ এখানে আপনার index.js ফাইল থেকে Supabase URL এবং Key বসিয়ে দিন:
-    const SUPABASE_URL = "https://kuecacvhadqzywvkmauo.supabase.co"; 
-    const SUPABASE_ANON_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI";
+    const URL = 'https://kuecacvhadqzywvkmauo.supabase.co';
+    const KEY = 'sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI';
 
-    const cleanUrl = SUPABASE_URL.replace(/\/$/, "");
     const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': KEY,
+        'Authorization': `Bearer ${KEY}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
     };
@@ -78,13 +76,8 @@
 
     // ৩. সরাসরি REST API দিয়ে অর্ডারের তথ্য এনে এডিট মোডাল ওপেন করা
     async function openEditModal(orderId) {
-        if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-            alert('দয়া করে order-edit.js ফাইলে আপনার Supabase URL এবং Key বসিয়ে নিন!');
-            return;
-        }
-
         try {
-            const response = await fetch(`${cleanUrl}/rest/v1/orders?id=eq.${orderId}&select=*`, {
+            const response = await fetch(`${URL}/rest/v1/orders?id=eq.${orderId}&select=*`, {
                 method: 'GET',
                 headers: headers
             });
@@ -185,7 +178,7 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch(`${cleanUrl}/rest/v1/orders?id=eq.${currentOrder.id}&status=eq.pending`, {
+            const response = await fetch(`${URL}/rest/v1/orders?id=eq.${currentOrder.id}&status=eq.pending`, {
                 method: 'PATCH',
                 headers: headers,
                 body: JSON.stringify({
@@ -210,9 +203,10 @@
             btn.innerText = '✅ আপডেট করুন';
             btn.disabled = false;
             alert('নেটওয়ার্ক এরর: ' + err.message);
-         }
-      };
-           document.getElementById('cancel-edit-order-btn').onclick = function () {
-           document.getElementById('custom-order-edit-modal').style.display = 'none';
-      };
+        }
+    };
+
+    document.getElementById('cancel-edit-order-btn').onclick = function () {
+        document.getElementById('custom-order-edit-modal').style.display = 'none';
+    };
 })();
