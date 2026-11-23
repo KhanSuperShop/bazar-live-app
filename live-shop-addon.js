@@ -1,14 +1,71 @@
 (function() {
   var U = "https://" + "kuecacvhadqzywvkmauo" + ".supabase.co";
   var K = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI";
+  var SHOP_WA = "8801717888666";
   var liveProducts = [];
 
-  // প্রিন্ট স্টাইল যোগ করা (যাতে প্রিন্ট/PDF করলে শুধু রসিদটিই পরিষ্কারভাবে আসে)
   var pStyle = document.createElement("style");
-  pStyle.innerHTML = "@media print { body * { visibility: hidden !important; } #addon-receipt-modal, #addon-receipt-body, #addon-receipt-body * { visibility: visible !important; } #addon-receipt-modal { position: fixed !important; left: 0 !important; top: 0 !important; background: #fff !important; align-items: flex-start !important; padding: 0 !important; } #addon-rcp-btns { display: none !important; } }";
+  pStyle.innerHTML = "@media print { body * { visibility: hidden !important; } #addon-receipt-modal, #addon-receipt-body, #addon-receipt-body * { visibility: visible !important; } #addon-receipt-modal { position: fixed !important; left: 0 !important; top: 0 !important; background: #fff !important; align-items: flex-start !important; padding: 0 !important; } #addon-rcp-btns, #addon-wa-btn { display: none !important; } }";
   document.head.appendChild(pStyle);
 
-  // ১. ডাটাবেস থেকে স্টক তথ্য এনে "স্টক শেষ" ব্যাজ বসানো
+  function setupWhatsAppBtn() {
+    if (document.getElementById("addon-wa-btn")) return;
+    var a = document.createElement("a");
+    a.id = "addon-wa-btn";
+    a.href = "https://wa.me" + SHOP_WA + "?text=" + encodeURIComponent("আসসালামু আলাইকুম, খান সুপার শপ থেকে বাজার অর্ডার করতে চাই।");
+    a.target = "_blank";
+    a.title = "WhatsApp-এ অর্ডার বা যোগাযোগ করুন";
+    a.style.cssText = "position:fixed; bottom:20px; right:20px; background:#25D366; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; justify-content:center; align-items:center; box-shadow:0 4px 12px rgba(0,0,0,0.28); z-index:99990; text-decoration:none; font-size:28px;";
+    a.innerHTML = "💬";
+    document.body.appendChild(a);
+  }
+
+  function setupLiveSearch() {
+    if (document.getElementById("addon-live-search-wrap")) return;
+    var headings = document.querySelectorAll("h1, h2, h3");
+    var targetHeading = null;
+    for (var i = 0; i < headings.length; i++) {
+      if (headings.item(i) && headings.item(i).innerText.includes("আমাদের পণ্যসমূহ")) {
+        targetHeading = headings.item(i);
+        break;
+      }
+    }
+
+    var wrap = document.createElement("div");
+    wrap.id = "addon-live-search-wrap";
+    wrap.style.cssText = "max-width:520px; margin:12px auto 16px auto; padding:0 12px;";
+    wrap.innerHTML =
+      "<div style='position:relative; display:flex; align-items:center;'>" +
+        "<input type='text' id='addon-live-search-input' placeholder='🔍 পণ্যের নাম লিখে খুঁজুন... (যেমন: চাল, তেল, চিনি)' style='width:100%; padding:11px 38px 11px 14px; border:2px solid #28a745; border-radius:25px; font-size:15px; outline:none; box-shadow:0 2px 6px rgba(40,167,69,0.12); box-sizing:border-box;'>" +
+        "<button type='button' id='addon-live-search-clear' style='display:none; position:absolute; right:12px; background:#eee; border:none; width:24px; height:24px; border-radius:50%; cursor:pointer; font-weight:bold; color:#555; font-size:12px;'>✖</button>" +
+      "</div>";
+
+    if (targetHeading) targetHeading.insertAdjacentElement("afterend", wrap);
+    else (document.querySelector("main") || document.body).insertAdjacentElement("afterbegin", wrap);
+
+    var inputEl = document.getElementById("addon-live-search-input");
+    var clearBtn = document.getElementById("addon-live-search-clear");
+
+    function filterCards() {
+      var q = inputEl.value.trim().toLowerCase();
+      clearBtn.style.display = q.length > 0 ? "block" : "none";
+      document.querySelectorAll("div").forEach(function(card) {
+        var btn = card.querySelector("button");
+        if (!btn || card.children.length > 8 || card.offsetHeight > 460 || card.offsetHeight < 120) return;
+        var txt = (card.innerText || "").toLowerCase();
+        if (!txt.includes("৳")) return;
+        card.style.display = (q === "" || txt.includes(q)) ? "" : "none";
+      });
+    }
+
+    inputEl.addEventListener("input", filterCards);
+    clearBtn.addEventListener("click", function() {
+      inputEl.value = "";
+      filterCards();
+      inputEl.focus();
+    });
+  }
+
   async function syncStockBadges() {
     try {
       var r = await fetch(U + "/rest/v1/products?select=id,title,stock,in_stock", {
@@ -22,11 +79,9 @@
 
   function applyOutOfStockUI() {
     if (!liveProducts || liveProducts.length === 0) return;
-    var cards = document.querySelectorAll("div");
-
-    cards.forEach(function(card) {
+    document.querySelectorAll("div").forEach(function(card) {
       var btn = card.querySelector("button");
-      if (!btn || card.children.length > 8 || card.offsetHeight > 450 || card.offsetHeight < 120) return;
+      if (!btn || card.children.length > 8 || card.offsetHeight > 460 || card.offsetHeight < 120) return;
       var txt = card.innerText || "";
       if (!txt.includes("৳")) return;
 
@@ -40,7 +95,6 @@
           card.style.position = "relative";
           card.style.opacity = "0.65";
           card.style.pointerEvents = "none";
-
           if (!card.querySelector(".addon-oos-badge")) {
             var badge = document.createElement("div");
             badge.className = "addon-oos-badge";
@@ -48,7 +102,6 @@
             badge.style.cssText = "position:absolute; top:8px; right:8px; background:#d32f2f; color:#fff; padding:4px 9px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; box-shadow:0 2px 5px rgba(0,0,0,0.2);";
             card.appendChild(badge);
           }
-
           if (btn) {
             btn.innerText = "স্টক শেষ";
             btn.style.background = "#888";
@@ -58,8 +111,6 @@
       }
     });
   }
-
-  // ২. অর্ডার সাবমিট হলে ডিজিটাল রসিদ (Order Receipt) পপআপ দেখানো
   function setupOrderReceipt() {
     var modal = document.createElement("div");
     modal.id = "addon-receipt-modal";
@@ -88,9 +139,7 @@
         if (typeof url === "string" && url.includes("/rest/v1/orders") && opts && opts.method && opts.method.toUpperCase() === "POST" && res.ok) {
           var bodyData = JSON.parse(opts.body);
           var order = Array.isArray(bodyData) ? bodyData.at(0) : bodyData;
-          if (order && order.items) {
-            showDigitalReceipt(order);
-          }
+          if (order && order.items) showDigitalReceipt(order);
         }
       } catch (e) {}
       return res;
@@ -106,13 +155,15 @@
       var name = it.title || it.name || "পণ্য";
       var qty = it.quantity || it.qty || 1;
       var price = Number(it.price) || 0;
+      var lineTotal = price * qty;
       return "<tr>" +
         "<td style='padding:6px 2px; border-bottom:1px solid #eee;'>" + (idx + 1) + ". " + name + "</td>" +
         "<td style='padding:6px 2px; border-bottom:1px solid #eee; text-align:center;'>" + qty + "</td>" +
-        "<td style='padding:6px 2px; border-bottom:1px solid #eee; text-align:right;'>৳" + (price * qty) + "</td>" +
+        "<td style='padding:6px 2px; border-bottom:1px solid #eee; text-align:right;'>৳" + lineTotal + "</td>" +
       "</tr>";
     }).join("");
 
+    var totalAmt = order.total_amount || 0;
     document.getElementById("addon-receipt-body").innerHTML =
       "<div style='text-align:center; border-bottom:2px dashed #28a745; padding-bottom:10px; margin-bottom:10px;'>" +
         "<div style='font-size:28px;'>✅</div>" +
@@ -131,7 +182,7 @@
         "<tbody>" + rows + "</tbody>" +
       "</table>" +
       "<div style='border-top:2px solid #28a745; padding-top:8px; text-align:right;'>" +
-        "<div style='font-size:17px; font-weight:bold; color:#d32f2f;'>সর্বমোট বিল: ৳" + (order.total_amount || 0) + " টাকা</div>" +
+        "<div style='font-size:17px; font-weight:bold; color:#d32f2f;'>সর্বমোট বিল: ৳" + totalAmt + " টাকা</div>" +
         "<div style='font-size:11px; color:#555; margin-top:2px;'>(ক্যাশ অন ডেলিভারি - পণ্য হাতে পেয়ে টাকা পরিশোধ করুন)</div>" +
       "</div>";
 
@@ -139,14 +190,22 @@
   }
 
   function initLiveAddon() {
+    setupWhatsAppBtn();
+    setupLiveSearch();
     setupOrderReceipt();
     syncStockBadges();
     setTimeout(applyOutOfStockUI, 1500);
     setTimeout(applyOutOfStockUI, 3500);
 
     document.addEventListener("click", function(e) {
-      if (e.target && e.target.tagName === "BUTTON") {
+      if (e.target && e.target.tagName === "BUTTON" && e.target.id !== "addon-live-search-clear") {
         setTimeout(applyOutOfStockUI, 300);
+        var inp = document.getElementById("addon-live-search-input");
+        if (inp && inp.value.trim() !== "") {
+          inp.value = "";
+          var clr = document.getElementById("addon-live-search-clear");
+          if (clr) clr.style.display = "none";
+        }
       }
     });
   }
