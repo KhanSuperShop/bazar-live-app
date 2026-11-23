@@ -12,7 +12,7 @@
     if (document.getElementById("addon-wa-btn")) return;
     var a = document.createElement("a");
     a.id = "addon-wa-btn";
-    a.href = "https://wa.me" + SHOP_WA + "?text=" + encodeURIComponent("আসসালামু আলাইকুম, খান সুপার শপ থেকে বাজার অর্ডার করতে চাই।");
+    a.href = "https://whatsapp.com" + SHOP_WA + "&text=" + encodeURIComponent("আসসালামু আলাইকুম, খান সুপার শপ থেকে বাজার অর্ডার করতে চাই।");
     a.target = "_blank";
     a.title = "WhatsApp-এ অর্ডার বা যোগাযোগ করুন";
     a.style.cssText = "position:fixed; bottom:20px; right:20px; background:#25D366; color:#fff; width:54px; height:54px; border-radius:50%; display:flex; justify-content:center; align-items:center; box-shadow:0 4px 12px rgba(0,0,0,0.28); z-index:99990; text-decoration:none; font-size:28px;";
