@@ -3,6 +3,11 @@
   var K = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI";
   var liveProducts = [];
 
+  // প্রিন্ট স্টাইল যোগ করা (যাতে প্রিন্ট/PDF করলে শুধু রসিদটিই পরিষ্কারভাবে আসে)
+  var pStyle = document.createElement("style");
+  pStyle.innerHTML = "@media print { body * { visibility: hidden !important; } #addon-receipt-modal, #addon-receipt-body, #addon-receipt-body * { visibility: visible !important; } #addon-receipt-modal { position: fixed !important; left: 0 !important; top: 0 !important; background: #fff !important; align-items: flex-start !important; padding: 0 !important; } #addon-rcp-btns { display: none !important; } }";
+  document.head.appendChild(pStyle);
+
   // ১. ডাটাবেস থেকে স্টক তথ্য এনে "স্টক শেষ" ব্যাজ বসানো
   async function syncStockBadges() {
     try {
@@ -62,7 +67,7 @@
     modal.innerHTML =
       "<div style='background:#fff; width:100%; max-width:380px; border-radius:10px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.3); font-family:sans-serif; color:#222; max-height:90vh; overflow-y:auto;'>" +
         "<div id='addon-receipt-body'></div>" +
-        "<div style='display:flex; gap:10px; margin-top:15px;'>" +
+        "<div id='addon-rcp-btns' style='display:flex; gap:10px; margin-top:15px;'>" +
           "<button type='button' id='addon-rcp-print' style='flex:1; background:#28a745; color:#fff; border:none; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;'>🖨 প্রিন্ট / সেভ</button>" +
           "<button type='button' id='addon-rcp-close' style='flex:1; background:#dc3545; color:#fff; border:none; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;'>✖ বন্ধ করুন</button>" +
         "</div>" +
@@ -76,7 +81,6 @@
       window.print();
     };
 
-    // fetch ইন্টারসেপ্ট করে অর্ডার ডাটা ধরা (মূল কোডে হাত না দিয়েই)
     var origFetch = window.fetch;
     window.fetch = async function(url, opts) {
       var res = await origFetch.apply(this, arguments);
@@ -140,7 +144,6 @@
     setTimeout(applyOutOfStockUI, 1500);
     setTimeout(applyOutOfStockUI, 3500);
 
-    // ক্যাটাগরি বাটনে ক্লিক করলে নতুন কার্ডগুলোতেও ব্যাজ বসানো
     document.addEventListener("click", function(e) {
       if (e.target && e.target.tagName === "BUTTON") {
         setTimeout(applyOutOfStockUI, 300);
