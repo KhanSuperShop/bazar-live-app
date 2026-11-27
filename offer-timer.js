@@ -1,50 +1,79 @@
-// offer-timer.js
-document.addEventListener("DOMContentLoaded", () => {
-  // প্রতি ১ সেকেন্ড পরপর চেক করবে পেজে প্রোডাক্ট কার্ড লোড হয়েছে কি না
-  const checkProducts = setInterval(() => {
-    // আপনার ওয়েবসাইটের প্রোডাক্ট কার্ডগুলো খুঁজে বের করা
-    const productCards = document.querySelectorAll(".product-card, [data-product-id]"); 
-    
-    if (productCards.length > 0 && typeof productsData !== "undefined") {
-      clearInterval(checkProducts);
-      initAllTimers(productsData);
-    }
-  }, 500);
-});
+// offer-timer.js (স্বয়ংসম্পূর্ণ ভার্সন - মূল কোডের কোনো ভেরিয়েবলের দরকার নেই)
+(async function () {
+  // ১. আপনার মূল কোড থেকে কপি করা Supabase URL ও Key এখানে বসান
+  const SB_URL = "https://kuecacvhadqzywvkmauo.supabase.co";
+  const SB_KEY = "sb_publishable_ijrPXf2ssOl-5usaMmSNgw_VNpkJkpI";
 
-function initAllTimers(products) {
-  products.forEach((product) => {
-    if (!product.offer_end_time) return;
+  try {
+    // ২. সরাসরি Supabase থেকে যেসব পণ্যে offer_end_time আছে সেগুলো আনা
+    const res = await fetch(`${SB_URL}/rest/v1/products?select=*`, {
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+      },
+    });
+    const products = await res.json();
 
-    // পণ্যের নাম দিয়ে কার্ডটি খুঁজে বের করা
-    const cards = Array.from(document.querySelectorAll("div, article, li"));
-    const targetCard = cards.find(el => el.innerText && el.innerText.includes(product.name) && el.querySelector("button"));
+    // ৩. পেজে প্রোডাক্ট কার্ড লোড হওয়ার পর টাইমার বসানো
+    const waitForCards = setInterval(() => {
+      const buttons = Array.from(document.querySelectorAll("button")).filter((btn) =>
+        btn.innerText.includes("কার্টে যোগ করুন")
+      );
 
-    if (targetCard && !targetCard.querySelector(".custom-offer-timer")) {
-      const timerBadge = document.createElement("div");
-      timerBadge.className = "custom-offer-timer";
-      timerBadge.style.cssText = "background:#d32f2f; color:#fff; font-size:12px; font-weight:bold; padding:4px 8px; border-radius:4px; margin-top:5px; text-align:center;";
-      
-      // কার্ডের দামের নিচে বা বাটনের উপরে টাইমার বসানো
-      targetCard.insertBefore(timerBadge, targetCard.querySelector("button"));
+      if (buttons.length > 0 && Array.isArray(products)) {
+        clearInterval(waitForCards);
 
-      const endTime = new Date(product.offer_end_time).getTime();
+        products.forEach((item) => {
+          if (!item.offer_end_time) return;
 
-      const timer = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = endTime - now;
+          // পণ্যের নাম বা টাইটেল (আপনার টেবিলে যে নামেই থাকুক না কেন)
+          const productName = item.name || item.title || item.product_name;
+          if (!productName) return;
 
-        if (distance <= 0) {
-          clearInterval(timer);
-          timerBadge.remove();
-          return;
-        }
+          // কার্ড খুঁজে বের করা
+          const targetBtn = buttons.find((btn) => {
+            const card = btn.closest("div");
+            return card && card.innerText.includes(productName);
+          });
 
-        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((distance % (1000 * 60)) / 1000);
-        timerBadge.innerText = `⏳ অফার শেষ হতে বাকি: ${h}h : ${m}m : ${s}s`;
-      }, 1000);
-    }
-  });
-}
+          if (targetBtn) {
+            const card = targetBtn.closest("div");
+            if (card.querySelector(".custom-offer-timer")) return;
+
+            const timerBox = document.createElement("div");
+            timerBox.className = "custom-offer-timer";
+            timerBox.style.cssText =
+              "background:#d32f2f; color:#fff; font-size:12px; font-weight:bold; padding:4px 6px; border-radius:5px; margin:6px 0; text-align:center;";
+            
+            targetBtn.parentNode.insertBefore(timerBox, targetBtn);
+
+            const endTime = new Date(item.offer_end_time).getTime();
+
+            const interval = setInterval(() => {
+              const now = new Date().getTime();
+              const diff = endTime - now;
+
+              if (diff <= 0) {
+                clearInterval(interval);
+                timerBox.remove();
+                return;
+              }
+
+              const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+              const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+              timerBox.innerText =
+                d > 0
+                  ? `⏳ অফার বাকি: ${d}d ${h}h : ${m}m : ${s}s`
+                  : `⏳ অফার বাকি: ${h}h : ${m}m : ${s}s`;
+            }, 1000);
+          }
+        });
+      }
+    }, 500);
+  } catch (err) {
+    console.error("Offer timer error:", err);
+  }
+})();
