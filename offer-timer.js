@@ -1,37 +1,50 @@
 // offer-timer.js
-function startProductOfferTimer(product, elementId) {
-  const timerEl = document.getElementById(elementId);
-  if (!timerEl) return;
-
-  // যদি Supabase-এ offer_end_time খালি (NULL) থাকে, তবে টাইমার দেখাবে না
-  if (!product.offer_end_time) {
-    timerEl.style.display = "none";
-    return;
-  }
-
-  const endTime = new Date(product.offer_end_time).getTime();
-
-  function updateClock() {
-    const now = new Date().getTime();
-    const distance = endTime - now;
-
-    // সময় শেষ হয়ে গেলে অটোমেটিক টাইমার হাইড হয়ে যাবে
-    if (distance <= 0) {
-      timerEl.style.display = "none";
-      return;
+document.addEventListener("DOMContentLoaded", () => {
+  // প্রতি ১ সেকেন্ড পরপর চেক করবে পেজে প্রোডাক্ট কার্ড লোড হয়েছে কি না
+  const checkProducts = setInterval(() => {
+    // আপনার ওয়েবসাইটের প্রোডাক্ট কার্ডগুলো খুঁজে বের করা
+    const productCards = document.querySelectorAll(".product-card, [data-product-id]"); 
+    
+    if (productCards.length > 0 && typeof productsData !== "undefined") {
+      clearInterval(checkProducts);
+      initAllTimers(productsData);
     }
+  }, 500);
+});
 
-    timerEl.style.display = "inline-block";
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+function initAllTimers(products) {
+  products.forEach((product) => {
+    if (!product.offer_end_time) return;
 
-    timerEl.innerText = days > 0 
-      ? `⏳ ${days}d ${hours}h : ${minutes}m : ${seconds}s` 
-      : `⏳ ${hours}h : ${minutes}m : ${seconds}s`;
-  }
+    // পণ্যের নাম দিয়ে কার্ডটি খুঁজে বের করা
+    const cards = Array.from(document.querySelectorAll("div, article, li"));
+    const targetCard = cards.find(el => el.innerText && el.innerText.includes(product.name) && el.querySelector("button"));
 
-  updateClock();
-  setInterval(updateClock, 1000);
+    if (targetCard && !targetCard.querySelector(".custom-offer-timer")) {
+      const timerBadge = document.createElement("div");
+      timerBadge.className = "custom-offer-timer";
+      timerBadge.style.cssText = "background:#d32f2f; color:#fff; font-size:12px; font-weight:bold; padding:4px 8px; border-radius:4px; margin-top:5px; text-align:center;";
+      
+      // কার্ডের দামের নিচে বা বাটনের উপরে টাইমার বসানো
+      targetCard.insertBefore(timerBadge, targetCard.querySelector("button"));
+
+      const endTime = new Date(product.offer_end_time).getTime();
+
+      const timer = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        if (distance <= 0) {
+          clearInterval(timer);
+          timerBadge.remove();
+          return;
+        }
+
+        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((distance % (1000 * 60)) / 1000);
+        timerBadge.innerText = `⏳ অফার শেষ হতে বাকি: ${h}h : ${m}m : ${s}s`;
+      }, 1000);
+    }
+  });
 }
